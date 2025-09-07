@@ -1,0 +1,54 @@
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { UsersProvider } from '../contexts/UsersContext';
+import { DeleteRequestsProvider } from '../contexts/DeleteRequestsContext';
+import Sidebar from './layout/Sidebar';
+import Header from './layout/Header';
+import UsersManagement from './pages/UsersManagement';
+import UserDocuments from './pages/UserDocuments';
+import GroupsManagement from './pages/GroupsManagement';
+import DocumentsManagement from './pages/DocumentsManagement';
+import DeleteRequestsManagement from './pages/DeleteRequestsManagement';
+import PermissionsManagement from './pages/PermissionsManagement';
+import AdminProfileManagement from './pages/AdminProfileManagement';
+
+const Dashboard = () => {
+  return (
+    <UsersProvider>
+      <DeleteRequestsProvider>
+        <div className="h-screen bg-gray-50 flex overflow-hidden">
+        {/* Fixed Sidebar */}
+        <div className="fixed left-0 top-0 h-full z-30">
+          <Sidebar />
+        </div>
+        
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col ml-64">
+          {/* Fixed Header */}
+          <div className="fixed top-0 right-0 left-64 z-20">
+            <Header />
+          </div>
+          
+          {/* Scrollable Main Content */}
+          <main className="flex-1 pt-20 overflow-y-auto">
+            <div className="p-6">
+              <Routes>
+                <Route path="/" element={<Navigate to="/users" replace />} />
+                <Route path="/users" element={<UsersManagement />} />
+                <Route path="/users/:userId/documents" element={<UserDocuments />} />
+                <Route path="/groups" element={<GroupsManagement />} />
+                <Route path="/documents" element={<DocumentsManagement />} />
+                <Route path="/delete-requests" element={<DeleteRequestsManagement />} />
+                <Route path="/permissions" element={<PermissionsManagement />} />
+                <Route path="/settings" element={<AdminProfileManagement />} />
+              </Routes>
+            </div>
+          </main>
+        </div>
+      </div>
+      </DeleteRequestsProvider>
+    </UsersProvider>
+  );
+};
+
+export default Dashboard;

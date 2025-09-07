@@ -1,0 +1,122 @@
+{
+    "app": {
+      "welcome": "Salom, Xush kelibsiz!",
+      "login": "Kirish",
+      "logout": "Chiqish",
+      "title": "AgroFin Hisobot Tizimi"
+    },
+    "auth": {
+      "title": "Akkauntga kirish",
+      "telegramId": "Telegram ID",
+      "password": "Parol",
+      "signIn": "Kirish",
+      "signingIn": "Kirish...",
+      "loginSuccess": "Muvaffaqiyatli kirdingiz!",
+      "loginError": "Kirishda xatolik yuz berdi"
+    },
+    "navigation": {
+      "title": "AgroFin-Hisobot",
+      "reports": "Hisobotlar",
+      "deleteRequests": "O'chirish so'rovlari",
+      "logout": "Chiqish"
+    },
+    "documents": {
+      "title": "Hujjatlar",
+      "upload": "Hujjat Yuklash",
+      "download": "Yuklab olish",
+      "edit": "Tahrirlash",
+      "delete": "O'chirish",
+      "reportName": "Hisobot nomi",
+      "day": "Kun",
+      "month": "Oy",
+      "year": "Yil",
+      "actions": "Amallar",
+      "noReportsFound": "Hisobotlar topilmadi",
+      "uploadFirstReport": "Hisobotlarni yuklashni boshlashingiz mumkin.",
+      "loadingReports": "Hisobotlar yuklanmoqda...",
+      "deleteRequestSend": "Ushbu hujjatni o'chirish uchun so'rov yuborishni hohlaysizmi?",
+      "show": "Ko'rsatish",
+      "perPage": "Har bir sahifa uchun",
+      "previous": "Oldingi",
+      "next": "Keyingi",
+      "showing": "Ko'rsatilmoqda",
+      "results": "Natijalar",
+      "to": "ga",
+      "of": "dan",
+      "largeDataset": "Ma'lumotlar ko'p bo'lsa, filterlarni qo'llashni tavsiya etamiz"
+    },
+    "searchAndFilters": {
+        "filter": "Filterlash",
+        "search": "Qidirish",
+        "searchPlaceholder": "Hisobot nomi bo'yicha qidirish",
+        "year": "Yil",
+        "month": "Oy",
+        "allYears": "Barcha yillar",
+        "allMonths": "Barcha oylar",
+        "startDate": "Boshlanish sanasi",
+        "endDate": "Tugash sanasi",
+        "specificDate": "Aniq bir sana",
+        "clearFilters": "Filterlarni tozalash",
+        "applyFilters": "Filterlarni qo'llash"
+    },
+    "deleteRequests": {
+        "title": "O'chirish so'rovlari",
+        "loading": "O'chirish so'rovlari yuklanmoqda...",
+        "document": "Hujjat",
+        "requestDate": "So'rov sanasi",
+        "status": "Holati",
+        "group": "Guruh",
+        "noDeleteReqFound": "O'chirish so'rovlari topilmadi",
+        "noDeleteReqFoundDesc": "Siz hujjat o'chirish uchun hech qanaqa so'rov yubormadingiz",
+        "orgUploaded": "Yuklangan sana",
+        "pending": "Kutilmoqda",
+        "approved": "Tasdiqlandi",
+        "rejected": "Rad etildi",
+        "pendingDesc": "Admin tomonidan tasdiqlanishi kutilmoqda",
+        "approvedDesc": "Hujjat o'chirilishi tasdiqlandi",
+        "rejectedDesc": "Hujjat o'chirilishi rad etildi"
+    },
+    "uploadModal": {
+        "title": "Yangi hujjat yuklash",
+        "fileTitle": "Hujjat nomi*",
+        "fileTitlePlaceholder": "Hujjat nomini kiriting",
+        "selectFile": "Hujjatni tanlang*",
+        "upload": "Fayl yuklash",
+        "selectedFile": "Tanlangan fayl",
+        "cancel": "Bekor qilish",
+        "uploading": "Fayl yuklanmoqda..."
+    },
+    "editModal": {
+        "edit": "Hujjat nomini tahrirlash",
+        "replace": "Faylni almashtirish",
+        "fileTitle": "Hujjat nomi*",
+        "fileTitlePlaceholder": "Hujjat nomini kiriting",
+        "selectNewFile": "Yangi faylni tanlang*",
+        "upload": "Fayl yuklash",
+        "selectedFile": "Tanlangan fayl",
+        "editNameOnly": "Hujjat nomini tahrirlash",
+        "cancel": "Bekor qilish",
+        "updating": "Hujjat nomi o'zgartirilmoqda...",
+        "replacing": "Fayl almashtirilmoqda..."
+
+    },
+    "months" : {
+        "January": "Yanvar",
+        "February": "Fevral",
+        "March": "Mart",
+        "April": "Aprel",
+        "May": "May",
+        "June": "Iyun",
+        "July": "Iyul",
+        "August": "Avgust",
+        "September": "Sentabr",
+        "October": "Oktabr",
+        "November": "Noyabr",
+        "December": "Dekabr"
+    },
+    "language": {
+      "uzbek": "O'zbek",
+      "russian": "Ruscha",
+      "selectLanguage": "Tilni tanlang"
+    }
+}

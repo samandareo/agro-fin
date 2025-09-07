@@ -1,0 +1,120 @@
+{
+    "app": {
+      "welcome": "Здравствуйте, добро пожаловать!",
+      "login": "Войти",
+      "logout": "Выйти",
+      "title": "Система отчетов AgroFin"
+    },
+    "auth": {
+      "title": "Вход в аккаунт",
+      "telegramId": "Телеграм ID",
+      "password": "Пароль",
+      "signIn": "Войти",
+      "signingIn": "Вход...",
+      "loginSuccess": "Успешный вход!",
+      "loginError": "Ошибка при входе"
+    },
+    "navigation": {
+      "title": "АгроФин-Отчет",
+      "reports": "Отчеты",
+      "deleteRequests": "Запросы на удаление",
+      "logout": "Выйти"
+    },
+    "documents": {
+      "title": "Документы",
+      "upload": "Загрузить",
+      "download": "Скачать",
+      "edit": "Редактировать",
+      "delete": "Удалить",
+      "reportName": "Название отчета",
+      "day": "День",
+      "month": "Месяц",
+      "year": "Год",
+      "actions": "Действия",
+      "loadingReports": "Загрузка отчетов...",
+      "deleteRequestSend": "Вы действительно хотите отправить запрос на удаление этого документа?",
+      "show": "Показать",
+      "perPage": "На странице",
+      "previous": "Предыдущий",
+      "next": "Следующий",
+      "showing": "Показать",
+      "results": "Результаты",
+      "to": "до",
+      "of": "из",
+      "largeDataset": "Если данных много, мы рекомендуем использовать фильтры"
+    },
+    "searchAndFilters": {
+        "filter": "Фильтр",
+        "search": "Поиск",
+        "searchPlaceholder": "Поиск по названию отчета",
+        "year": "Год",
+        "month": "Месяц",
+        "allYears": "Все годы",
+        "allMonths": "Все месяцы",
+        "startDate": "Дата начала",
+        "endDate": "Дата конца",
+        "specificDate": "Конкретная дата",
+        "clearFilters": "Очистить фильтры",
+        "applyFilters": "Применить фильтры"
+    },
+    "deleteRequests": {
+        "title": "Запросы на удаление",
+        "loading": "Загрузка запросов на удаление...",
+        "document": "Документ",
+        "requestDate": "Дата запроса",
+        "status": "Статус",
+        "group": "Группа",
+        "noDeleteReqFound": "Запросы на удаление не найдены",
+        "noDeleteReqFoundDesc": "Вы не отправили никаких запросов на удаление",
+        "orgUploaded": "Дата загрузки",
+        "pending": "Ожидание",
+        "approved": "Утверждено",
+        "rejected": "Отклонено",
+        "pendingDesc": "Ожидание утверждения администратором",
+        "approvedDesc": "Документ удален",
+        "rejectedDesc": "Запрос на удаление отклонен"
+    },
+    "uploadModal": {
+        "title": "Загрузка нового документа",
+        "fileTitle": "Название документа*",
+        "fileTitlePlaceholder": "Введите название документа",
+        "selectFile": "Выберите документ*",
+        "upload": "Загрузить",
+        "selectedFile": "Выбранный файл",
+        "cancel": "Отмена",
+        "uploading": "Загрузка файла..."
+    },
+    "editModal": {
+        "edit": "Редактировать название документа",
+        "replace": "Заменить файл",
+        "fileTitle": "Название документа*",
+        "fileTitlePlaceholder": "Введите название документа",
+        "selectNewFile": "Выберите новый файл*",
+        "upload": "Загрузить",
+        "selectedFile": "Выбранный файл",
+        "cancel": "Отмена",
+        "updating": "Редактирование названия документа...",
+        "replacing": "Замена файла...",
+        "editNameOnly": "Редактировать название документа"
+    },
+    "months" : {
+        "January": "Январь",
+        "February": "Февраль",
+        "March": "Март",
+        "April": "Апрель",
+        "May": "Май",
+        "June": "Июнь",
+        "July": "Июль",
+        "August": "Август",
+        "September": "Сентябрь",
+        "October": "Октябрь",
+        "November": "Ноябрь",
+        "December": "Декабрь"
+    },
+    "language": {
+      "uzbek": "Узбекский",
+      "russian": "Русский",
+      "selectLanguage": "Выберите язык"
+    }
+}
+  

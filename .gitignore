@@ -1,0 +1,9 @@
+/backend/node_modules
+/backend/.env
+/backend/agro-reports
+
+/frontend-user/node_modules
+/frontend-user/.env
+
+/frontend-admin/node_modules
+/frontend-admin/.env

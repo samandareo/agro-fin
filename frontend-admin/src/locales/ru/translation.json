@@ -1,6 +1,9 @@
 {
     "header": {
-        "adminDashboard": "Панель администратора"
+        "adminDashboard": "Панель администратора",
+        "adminRole": "Администратор",
+        "directorRole": "Директор",
+        "userRole": "Пользователь"
     },
     "navigation": {
         "logout": "Выйти",
@@ -14,7 +17,9 @@
         "Groups": "Группы",
         "Documents": "Документы",
         "Delete Requests": "Запросы на удаление",
-        "Permissions": "Права"
+        "Permissions": "Права",
+        "Settings": "Настройки",
+        "Messages": "Сообщения"
     },
     "login": {
         "title": "Панель администратора",
@@ -27,7 +32,8 @@
         "signingIn": "Вход...",
         "loginSuccess": "Успешный вход!",
         "loginError": "Ошибка при входе",
-        "logoutSuccess": "Вы успешно вышли из системы!"
+        "logoutSuccess": "Вы успешно вышли из системы!",
+        "unauthorizedRole": "Вход с этой ролью запрещен"
     },
     "users": {
         "title": "Управление пользователями",
@@ -275,5 +281,35 @@
         "securityNotice1": "Изменяйте пароль только при необходимости",
         "securityNotice2": "Рекомендуем использовать надежный пароль",
         "securityNotice3": "Никому не сообщайте свой пароль"
+    },
+    "messages": {
+        "title": "Управление сообщениями",
+        "subtitle": "Отправка и управление сообщениями пользователям",
+        "sendNewMessage": "Отправить новое сообщение",
+        "messageTitle": "Заголовок сообщения",
+        "titlePlaceholder": "Введите заголовок сообщения",
+        "messageText": "Текст сообщения",
+        "messagePlaceholder": "Введите текст сообщения",
+        "sendMessage": "Отправить сообщение",
+        "sending": "Отправка...",
+        "sentSuccessfully": "Сообщение успешно отправлено",
+        "sendError": "Ошибка при отправке сообщения",
+        "searchPlaceholder": "Поиск сообщений",
+        "sentMessages": "Отправленные сообщения",
+        "loadingMessages": "Загрузка сообщений...",
+        "noMessagesFound": "Сообщения не найдены",
+        "sendFirstMessage": "Отправьте первое сообщение",
+        "title": "Заголовок",
+        "message": "Сообщение",
+        "recipients": "Получатели",
+        "readCount": "Прочитано",
+        "sentDate": "Дата отправки",
+        "actions": "Действия",
+        "delete": "Удалить",
+        "deleteConfirm": "Вы действительно хотите удалить это сообщение?",
+        "deletedSuccessfully": "Сообщение успешно удалено",
+        "deleteError": "Ошибка при удалении сообщения",
+        "fetchError": "Ошибка при загрузке сообщений",
+        "fillAllFields": "Заполните все поля"
     }
 }

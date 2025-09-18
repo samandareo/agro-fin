@@ -5,7 +5,7 @@ const jwt = require("../utils/jwt");
 
 exports.register = async (req, res, next) => {
     try {
-        const { name, telegramId, password, status } = req.body;
+        const { name, telegramId, password, status, role="admin" } = req.body;
         if (!name || !telegramId || !password || !status) {
             return ApiResponse.badRequest("All fields are required").send(res);
         }
@@ -16,14 +16,14 @@ exports.register = async (req, res, next) => {
             return ApiResponse.badRequest("Admin already exists").send(res);
         }
 
-        const admin = await Admin.create({ name, telegramId, password, status, role: "admin" });
+        const admin = await Admin.create({ name, telegramId, password, status, role });
 
         if (!admin) {
             return ApiResponse.error("Failed to create admin").send(res);
         }
 
-        const accessToken = jwt.generateAccessToken({ id: admin.id, telegramId: admin.telegramId, role: "admin" });
-        const refreshToken = jwt.generateRefreshToken({ id: admin.id, telegramId: admin.telegramId, role: "admin" });
+        const accessToken = jwt.generateAccessToken({ id: admin.id, telegramId: admin.telegramId, role });
+        const refreshToken = jwt.generateRefreshToken({ id: admin.id, telegramId: admin.telegramId, role });
 
         return ApiResponse.success({ accessToken:accessToken, refreshToken:refreshToken }, "Admin created successfully").send(res);
     } catch (error) {
@@ -45,14 +45,21 @@ exports.login = async (req, res, next) => {
             return ApiResponse.badRequest("Admin not found").send(res);
         }
 
+        if (admin.role === "user") {
+            return ApiResponse.badRequest("You are not admin").send(res);
+        }
+
         const isPasswordCorrect = await Admin.comparePassword(password, admin.password);
 
         if (!isPasswordCorrect) {
             return ApiResponse.badRequest("Invalid password").send(res);
         }
 
-        const accessToken = jwt.generateAccessToken({ id: admin.id, telegramId: admin.telegramId, role: "admin" });
-        const refreshToken = jwt.generateRefreshToken({ id: admin.id, telegramId: admin.telegramId, role: "admin" });
+        const accessToken = jwt.generateAccessToken({ id: admin.id, telegramId: admin.telegramId, role: admin.role });
+        const refreshToken = jwt.generateRefreshToken({ id: admin.id, telegramId: admin.telegramId, role: admin.role });
+
+        console.log(accessToken, refreshToken);
+        console.log(admin);
 
         return ApiResponse.success({ accessToken:accessToken, refreshToken:refreshToken }, "Admin logged in successfully").send(res);
     } catch (error) {
@@ -75,12 +82,16 @@ exports.refreshToken = async (req, res, next) => {
             return ApiResponse.badRequest("Admin not found").send(res);
         }
 
-        if (admin.role !== "admin" && admin.telegramId !== decoded.telegramId) {
+        if (admin.role === "user") {
+            return ApiResponse.badRequest("You are not admin").send(res);
+        }
+
+        if (admin.telegramId !== decoded.telegramId) {
             return ApiResponse.badRequest("Admin not found").send(res);
         }
 
-        const newAccessToken = jwt.generateAccessToken({ id: admin.id, telegramId: admin.telegramId, role: "admin" });
-        const newRefreshToken = jwt.generateRefreshToken({ id: admin.id, telegramId: admin.telegramId, role: "admin" });
+        const newAccessToken = jwt.generateAccessToken({ id: admin.id, telegramId: admin.telegramId, role: admin.role });
+        const newRefreshToken = jwt.generateRefreshToken({ id: admin.id, telegramId: admin.telegramId, role: admin.role });
 
         return ApiResponse.success({ accessToken:newAccessToken, refreshToken:newRefreshToken }, "Admin refreshed token successfully").send(res);
     } catch (error) {

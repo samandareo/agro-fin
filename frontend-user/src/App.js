@@ -4,9 +4,11 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { DocumentProvider } from './contexts/DocumentContext';
 import { DeleteRequestProvider } from './contexts/DeleteRequestContext';
+import { NotificationsProvider } from './contexts/NotificationsContext';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import DeleteRequestsPage from './components/DeleteRequestsPage';
+import NotificationsPage from './components/NotificationsPage';
 import Header from './components/Header';
 import LanguageSwitcher from './components/LanguageSwitcher';
 
@@ -32,6 +34,7 @@ const AppLayout = () => {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/delete-requests" element={<DeleteRequestsPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
         </Routes>
       </main>
     </div>
@@ -51,7 +54,9 @@ const App = () => {
                 <ProtectedRoute>
                   <DocumentProvider>
                     <DeleteRequestProvider>
-                      <AppLayout />
+                      <NotificationsProvider>
+                        <AppLayout />
+                      </NotificationsProvider>
                     </DeleteRequestProvider>
                   </DocumentProvider>
                 </ProtectedRoute>

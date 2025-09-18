@@ -121,4 +121,10 @@ export const rolePermissionsAPI = {
   revoke: (data) => api.delete('/role-permissions', { data }),
 };
 
+export const notificationsAPI = {
+  sendNotification: (messageData) => api.post('/notifications/admin/send', messageData),
+  getAll: (params) => api.get('/notifications/admin/all', { params }),
+  delete: (notificationId) => api.delete(`/notifications/admin/${notificationId}`),
+};
+
 export default api;

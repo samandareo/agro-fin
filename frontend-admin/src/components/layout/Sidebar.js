@@ -5,23 +5,44 @@ import {
   FolderTree, 
   FileText, 
   Trash2, 
-  Key
+  Key,
+  Settings,
+  MessageSquare
 } from 'lucide-react';
 import Logo from '../../assets/logo.PNG';
 import { useDeleteRequests } from '../../contexts/DeleteRequestsContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 
 const Sidebar = () => {
   const { pendingCount } = useDeleteRequests();
+  const { admin } = useAuth();
   const { t } = useTranslation();
 
-  const navigation = [
-    { name: 'Users', href: '/users', icon: Users },
-    { name: 'Groups', href: '/groups', icon: FolderTree },
-    { name: 'Documents', href: '/documents', icon: FileText },
-    { name: 'Delete Requests', href: '/delete-requests', icon: Trash2, badge: pendingCount },
-    { name: 'Permissions', href: '/permissions', icon: Key },
-  ];
+  // Define navigation based on role
+  const getNavigation = () => {
+    const baseNavigation = [
+      { name: 'Documents', href: '/documents', icon: FileText },
+      { name: 'Delete Requests', href: '/delete-requests', icon: Trash2, badge: pendingCount },
+      { name: 'Permissions', href: '/permissions', icon: Key },
+      { name: 'Settings', href: '/settings', icon: Settings },
+    ];
+
+    // Only admin can see Users, Groups management, and Messages
+    if (admin?.role === 'admin') {
+      return [
+        { name: 'Users', href: '/users', icon: Users },
+        { name: 'Groups', href: '/groups', icon: FolderTree },
+        { name: 'Messages', href: '/messages', icon: MessageSquare },
+        ...baseNavigation
+      ];
+    }
+
+    // Director can only see Documents, Delete Requests, Permissions, and Settings
+    return baseNavigation;
+  };
+
+  const navigation = getNavigation();
 
   return (
     <div className="w-64 h-full bg-white shadow-lg flex flex-col">

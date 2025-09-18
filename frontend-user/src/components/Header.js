@@ -1,14 +1,16 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
+import { useNotifications } from '../contexts/NotificationsContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LogOut, FileText, Trash2 } from 'lucide-react';
+import { LogOut, FileText, Trash2, Bell } from 'lucide-react';
 import LanguageSwitcher from './LanguageSwitcher';
 const Logo = require('../assets/logo.PNG');
 
 
 const Header = () => {
   const { logout } = useAuth();
+  const { unreadCount } = useNotifications();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -20,6 +22,10 @@ const Header = () => {
 
   const isActive = (path) => {
     return location.pathname === path;
+  };
+
+  const handleNotificationsClick = () => {
+    navigate('/notifications');
   };
 
   return (
@@ -60,6 +66,24 @@ const Header = () => {
                 {t('navigation.deleteRequests')}
               </button>
             </nav>
+            
+            {/* Notifications Bell */}
+            <button
+              onClick={handleNotificationsClick}
+              className={`relative inline-flex items-center p-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                isActive('/notifications') 
+                  ? 'bg-brand-100 text-brand-700' 
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+              }`}
+              title={t('navigation.notifications')}
+            >
+              <Bell className="h-5 w-5" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
+            </button>
             
             <LanguageSwitcher />
             

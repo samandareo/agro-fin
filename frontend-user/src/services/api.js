@@ -90,4 +90,11 @@ export const deleteRequestsAPI = {
   createDeleteRequest: (documentId) => api.post(`/delete-requests/user/${documentId}`),
 };
 
+export const notificationsAPI = {
+  getUserNotifications: (params) => api.get('/notifications/user/notifications', { params }),
+  getUnreadCount: () => api.get('/notifications/user/unread-count'),
+  markAsRead: (notificationId) => api.put(`/notifications/user/mark-read/${notificationId}`),
+  markAllAsRead: () => api.put('/notifications/user/mark-all-read'),
+};
+
 export default api;

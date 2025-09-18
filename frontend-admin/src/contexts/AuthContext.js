@@ -13,17 +13,44 @@ export const useAuth = () => {
   return context;
 };
 
+// Helper function to decode JWT token
+const decodeToken = (token) => {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    console.error('Error decoding token:', error);
+    return null;
+  }
+};
+
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [admin, setAdmin] = useState(null);
   const [loading, setLoading] = useState(true);
   const { t } = useTranslation();
+  
   useEffect(() => {
     const checkAuth = () => {
       const token = localStorage.getItem('admin_access_token');
       if (token) {
-        setIsAuthenticated(true);
-        setAdmin({ role: 'admin' });
+        const decoded = decodeToken(token);
+        if (decoded && (decoded.role === 'admin' || decoded.role === 'director')) {
+          setIsAuthenticated(true);
+          setAdmin({ 
+            role: decoded.role,
+            id: decoded.id,
+            telegramId: decoded.telegramId
+          });
+        } else {
+          // Invalid token or wrong role
+          localStorage.removeItem('admin_access_token');
+          localStorage.removeItem('admin_refresh_token');
+        }
       }
       setLoading(false);
     };
@@ -42,11 +69,22 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('admin_access_token', accessToken);
         localStorage.setItem('admin_refresh_token', refreshToken);
         
-        setIsAuthenticated(true);
-        setAdmin({ role: 'admin' });
-        
-        toast.success(t('login.loginSuccess'));
-        return { success: true };
+        // Decode token to get role
+        const decoded = decodeToken(accessToken);
+        if (decoded && (decoded.role === 'admin' || decoded.role === 'director')) {
+          setIsAuthenticated(true);
+          setAdmin({ 
+            role: decoded.role,
+            id: decoded.id,
+            telegramId: decoded.telegramId
+          });
+          
+          toast.success(t('login.loginSuccess'));
+          return { success: true };
+        } else {
+          toast.error(t('login.unauthorizedRole'));
+          return { success: false, message: 'Unauthorized role' };
+        }
       } else {
         toast.error(response.data.message || t('login.loginError'));
         return { success: false, message: response.data.message };

@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 
 const Header = () => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, admin } = useAuth();
   const { t } = useTranslation();
   
   const handleLogout = () => {
@@ -16,6 +16,17 @@ const Header = () => {
 
   const handleSettings = () => {
     navigate('/settings');
+  };
+
+  const getRoleDisplayName = (role) => {
+    switch (role) {
+      case 'admin':
+        return t('header.adminRole');
+      case 'director':
+        return t('header.directorRole');
+      default:
+        return t('header.userRole');
+    }
   };
 
   return (
@@ -27,6 +38,11 @@ const Header = () => {
             <h1 className="text-2xl font-semibold text-gray-900">
               {t('header.adminDashboard')}
             </h1>
+            {admin?.role && (
+              <p className="text-sm text-gray-500 mt-1">
+                {getRoleDisplayName(admin.role)}
+              </p>
+            )}
           </div>
 
           {/* Right Side Actions */}

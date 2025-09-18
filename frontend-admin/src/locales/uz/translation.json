@@ -1,6 +1,9 @@
 {
     "header": {
-        "adminDashboard": "Admin paneli"
+        "adminDashboard": "Admin paneli",
+        "adminRole": "Administrator",
+        "directorRole": "Direktor",
+        "userRole": "Foydalanuvchi"
     },
     "navigation": {
         "logout": "Chiqish",
@@ -14,7 +17,9 @@
         "Groups": "Guruhlar",
         "Documents": "Hujjatlar",
         "Delete Requests": "O'chirish so'rovlari",
-        "Permissions": "Huquqlar"
+        "Permissions": "Huquqlar",
+        "Settings": "Sozlamalar",
+        "Messages": "Xabarlar"
     },
     "login": {
         "title": "Admin Panelga kirish",
@@ -27,7 +32,8 @@
         "signingIn": "Kirish...",
         "loginSuccess": "Kirish muvaffaqiyatli!",
         "loginError": "Kirishda xatolik yuz berdi",
-        "logoutSuccess": "Tizimdan muvaffaqiyatli chiqildi!"
+        "logoutSuccess": "Tizimdan muvaffaqiyatli chiqildi!",
+        "unauthorizedRole": "Bu rolda kirish taqiqlangan"
     },
     "users": {
         "title": "Foydalanuvchilarni boshqarish",
@@ -275,5 +281,35 @@
         "securityNotice1": "Parolni faqat kerak bo'lganda o'zgartiring",
         "securityNotice2": "Kuchli parol ishlatishni tavsiya qilamiz",
         "securityNotice3": "Parolni hech kimga bermang"
+    },
+    "messages": {
+        "title": "Xabarlar boshqaruvi",
+        "subtitle": "Foydalanuvchilarga xabar yuborish va boshqarish",
+        "sendNewMessage": "Yangi xabar yuborish",
+        "messageTitle": "Xabar sarlavhasi",
+        "titlePlaceholder": "Xabar sarlavhasini kiriting",
+        "messageText": "Xabar matni",
+        "messagePlaceholder": "Xabar matnini kiriting",
+        "sendMessage": "Xabar yuborish",
+        "sending": "Yuborilmoqda...",
+        "sentSuccessfully": "Xabar muvaffaqiyatli yuborildi",
+        "sendError": "Xabar yuborishda xatolik",
+        "searchPlaceholder": "Xabarlarni qidirish",
+        "sentMessages": "Yuborilgan xabarlar",
+        "loadingMessages": "Xabarlar yuklanmoqda...",
+        "noMessagesFound": "Xabarlar topilmadi",
+        "sendFirstMessage": "Birinchi xabarni yuboring",
+        "title": "Sarlavha",
+        "message": "Xabar",
+        "recipients": "Qabul qiluvchilar",
+        "readCount": "O'qilganlar soni",
+        "sentDate": "Yuborilgan sana",
+        "actions": "Amallar",
+        "delete": "O'chirish",
+        "deleteConfirm": "Bu xabarni o'chirishni hohlaysizmi?",
+        "deletedSuccessfully": "Xabar muvaffaqiyatli o'chirildi",
+        "deleteError": "Xabarni o'chirishda xatolik",
+        "fetchError": "Xabarlarni yuklashda xatolik",
+        "fillAllFields": "Barcha maydonlarni to'ldiring"
     }
 }

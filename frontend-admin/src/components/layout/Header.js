@@ -15,7 +15,7 @@ const Header = () => {
   };
 
   const handleSettings = () => {
-    navigate('/settings');
+    navigate('/admin/settings');
   };
 
   const getRoleDisplayName = (role) => {

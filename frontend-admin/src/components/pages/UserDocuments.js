@@ -136,7 +136,7 @@ const UserDocuments = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <button
-            onClick={() => navigate('/users')}
+            onClick={() => navigate('/admin/users')}
             className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
           >
             <ArrowLeft className="h-5 w-5" />

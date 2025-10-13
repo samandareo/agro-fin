@@ -35,7 +35,7 @@ const Login = () => {
       const result = await login(formData);
       if (result.success) {
         toast.success(t('auth.loginSuccess'));
-        navigate('/');
+        navigate('/user');
       } else {
         toast.error(result.message);
       }

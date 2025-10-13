@@ -19,7 +19,7 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  return isAuthenticated ? children : <Navigate to="/login" />;
+  return isAuthenticated ? children : <Navigate to="/admin/login" />;
 };
 
 const App = () => {
@@ -28,9 +28,9 @@ const App = () => {
       <Router>
         <div className="App">
           <Routes>
-            <Route path="/login" element={<Login />} />
+            <Route path="/admin/login" element={<Login />} />
             <Route
-              path="/*"
+              path="/admin/*"
               element={
                 <ProtectedRoute>
                   <Dashboard />

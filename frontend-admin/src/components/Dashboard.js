@@ -20,11 +20,11 @@ const Dashboard = () => {
   // Get default route based on role
   const getDefaultRoute = () => {
     if (admin?.role === 'admin') {
-      return '/users'; // Admin sees Users management first
+      return '/admin/users'; // Admin sees Users management first
     } else if (admin?.role === 'director') {
-      return '/documents'; // Director sees Documents management first
+      return '/admin/documents'; // Director sees Documents management first
     }
-    return '/documents'; // Fallback
+    return '/admin/documents'; // Fallback
   };
 
   return (

@@ -23,7 +23,7 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  return isAuthenticated ? children : <Navigate to="/login" />;
+  return isAuthenticated ? children : <Navigate to="/user/login" />;
 };
 
 const AppLayout = () => {
@@ -32,9 +32,9 @@ const AppLayout = () => {
       <Header />
       <main>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/delete-requests" element={<DeleteRequestsPage />} />
-          <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/user" element={<Dashboard />} />
+          <Route path="/user/delete-requests" element={<DeleteRequestsPage />} />
+          <Route path="/user/notifications" element={<NotificationsPage />} />
         </Routes>
       </main>
     </div>
@@ -47,7 +47,7 @@ const App = () => {
       <Router>
         <div className="App">
           <Routes>
-            <Route path="/login" element={<Login />} />
+            <Route path="/user/login" element={<Login />} />
             <Route
               path="/*"
               element={

@@ -86,7 +86,7 @@ const UsersManagement = () => {
   };
 
   const handleViewDocuments = (user) => {
-    navigate(`/users/${user.id}/documents`);
+    navigate(`/admin/users/${user.id}/documents`);
   };
 
   const handleSaveUser = async (userData) => {

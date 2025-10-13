@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api/v1',
+  baseURL: 'http://fin.agrobank.uz/api/v1',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -45,7 +45,7 @@ api.interceptors.response.use(
       } catch (refreshError) {
         localStorage.removeItem('admin_access_token');
         localStorage.removeItem('admin_refresh_token');
-        window.location.href = '/login';
+        window.location.href = '/admin/login';
       }
     }
     

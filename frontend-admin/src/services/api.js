@@ -45,7 +45,7 @@ api.interceptors.response.use(
       } catch (refreshError) {
         localStorage.removeItem('admin_access_token');
         localStorage.removeItem('admin_refresh_token');
-        window.location.href = '/admin/login';
+        window.location.href = '/login';
       }
     }
     

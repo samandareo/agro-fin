@@ -173,8 +173,14 @@ exports.updateDocument = async (req, res, next) => {
 exports.deleteDocument = async (req, res, next) => {
     try {
         const { documentId } = req.params;
-        const userId = req.user.id;
-        const userRole = req.user.role;
+        
+        // Handle both user and admin requests
+        const userId = req.user?.id || req.admin?.id;
+        const userRole = req.user?.role || (req.admin ? 'admin' : null);
+
+        if (!userId || !userRole) {
+            return ApiResponse.unauthorized("You are not authorized to access this resource").send(res);
+        }
 
         if (!documentId) {
             return ApiResponse.badRequest("Document ID is required").send(res);
@@ -494,8 +500,14 @@ exports.getUserFilterOptions = async (req, res, next) => {
 exports.downloadDocument = async (req, res, next) => {
     try {
         const { documentId } = req.params;
-        const userId = req.user.id;
-        const userRole = req.user.role;
+        
+        // Handle both user and admin requests
+        const userId = req.user?.id || req.admin?.id;
+        const userRole = req.user?.role || (req.admin ? 'admin' : null);
+
+        if (!userId || !userRole) {
+            return ApiResponse.unauthorized("You are not authorized to access this resource").send(res);
+        }
 
         if (!documentId) {
             return ApiResponse.badRequest("Document ID is required").send(res);
@@ -544,8 +556,14 @@ exports.downloadDocument = async (req, res, next) => {
 exports.getDocumentInfo = async (req, res, next) => {
     try {
         const { documentId } = req.params;
-        const userId = req.user.id;
-        const userRole = req.user.role;
+        
+        // Handle both user and admin requests
+        const userId = req.user?.id || req.admin?.id;
+        const userRole = req.user?.role || (req.admin ? 'admin' : null);
+
+        if (!userId || !userRole) {
+            return ApiResponse.unauthorized("You are not authorized to access this resource").send(res);
+        }
 
         if (!documentId) {
             return ApiResponse.badRequest("Document ID is required").send(res);

@@ -138,6 +138,19 @@ const DeleteRequestsManagement = () => {
     }
   };
 
+  const getTranslatedStatus = (status) => {
+    switch (status) {
+      case 'pending':
+        return t('deleteRequests.pending');
+      case 'approved':
+        return t('deleteRequests.approved');
+      case 'rejected':
+        return t('deleteRequests.rejected');
+      default:
+        return t('common.unknown');
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -244,7 +257,7 @@ const DeleteRequestsManagement = () => {
                     <td className="table-cell">
                       <span className={getStatusBadge(request.status)}>
                         {getStatusIcon(request.status)}
-                        {request.status?.charAt(0).toUpperCase() + request.status?.slice(1)}
+                        {getTranslatedStatus(request.status)?.charAt(0).toUpperCase() + getTranslatedStatus(request.status)?.slice(1)}
                       </span>
                     </td>
                     <td className="table-cell text-sm text-gray-900">

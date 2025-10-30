@@ -137,20 +137,20 @@ const DocumentsManagement = () => {
     loadDocuments(page, searchFilters);
   };
 
-  const handleDownloadDocument = async (document) => {
+  // rename parameter to avoid shadowing global `document` and request binary response
+  const handleDownloadDocument = async (doc) => {
     try {
-      const response = await documentsAPI.download(document.id);
-      
+      const response = await documentsAPI.download(doc.id, { responseType: 'blob' }); // or 'arraybuffer'
       const blob = new Blob([response.data]);
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = window.document.createElement('a');
       link.href = url;
-      link.download = generateDownloadFileName(document.title, document.file_path);
-      document.body.appendChild(link);
+      link.download = generateDownloadFileName(doc.title, doc.file_path);
+      window.document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
+      window.document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      
+
       toast.success(t('documents.download'));
     } catch (error) {
       console.error('Error downloading document:', error);

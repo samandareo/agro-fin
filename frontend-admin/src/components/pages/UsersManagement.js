@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUsers } from '../../contexts/UsersContext';
-import { Users, Plus, Search, Edit, Trash2, FileText, User } from 'lucide-react';
+import { Users, Plus, Search, Edit, Trash2, FileText, User, Shield } from 'lucide-react';
 import UserModal from '../modals/UserModal';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
@@ -86,7 +86,7 @@ const UsersManagement = () => {
   };
 
   const handleViewDocuments = (user) => {
-    navigate(`/admin/users/${user.id}/documents`);
+    navigate(`/users/${user.id}/documents`);
   };
 
   const handleSaveUser = async (userData) => {
@@ -203,7 +203,11 @@ const UsersManagement = () => {
                       <td className="table-cell">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-8 w-8 bg-brand-100 rounded-full flex items-center justify-center mr-3">
-                            <User className="h-4 w-4 text-brand-600" />
+                            {user.role === 'director' ? (
+                              <Shield className="h-4 w-4 text-brand-600" />
+                            ) : (
+                              <User className="h-4 w-4 text-brand-600" />
+                            )}
                           </div>
                           <div>
                             <div className="text-sm font-medium text-gray-900">
@@ -225,7 +229,7 @@ const UsersManagement = () => {
                         </span>
                       </td>
                       <td className="table-cell text-sm text-gray-900">
-                        {user.group_name || t('common.noData')}
+                        {user.role === 'director' ? <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800`}>Direktor</span> : (user.group_name || t('common.noData'))}
                       </td>
                       <td className="table-cell">
                         <div className="flex items-center space-x-2">

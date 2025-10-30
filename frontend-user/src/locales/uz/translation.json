@@ -7,7 +7,7 @@
     },
     "auth": {
       "title": "Akkauntga kirish",
-      "telegramId": "Telegram ID",
+      "telegramId": "Username",
       "password": "Parol",
       "signIn": "Kirish",
       "signingIn": "Kirish...",

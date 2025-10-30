@@ -7,7 +7,7 @@
     },
     "auth": {
       "title": "Вход в аккаунт",
-      "telegramId": "Телеграм ID",
+      "telegramId": "Имя пользователя",
       "password": "Пароль",
       "signIn": "Войти",
       "signingIn": "Вход...",

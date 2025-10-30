@@ -10,9 +10,11 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
     telegramId: '',
     password: '',
     status: true,
-    groupId: ''
+    groupId: '',
+    roleId: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGroupActive, setIsGroupActive] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -21,7 +23,8 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
         telegramId: user.telegram_id || '',
         password: '',
         status: user.status !== undefined ? user.status : true,
-        groupId: user.group_id || ''
+        groupId: user.role_id !== 3 ? (user.group_id || '') : null,
+        roleId: user.role_id || ''
       });
     } else {
       setFormData({
@@ -29,7 +32,8 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
         telegramId: '',
         password: '',
         status: true,
-        groupId: ''
+        groupId: '',
+        roleId: ''
       });
     }
   }, [user]);
@@ -37,6 +41,7 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    setIsGroupActive(name === 'roleId' && (value === '2'));
     setFormData({
       ...formData,
       [name]: type === 'checkbox' ? checked : value
@@ -63,7 +68,8 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
       telegramId: '',
       password: '',
       status: true,
-      groupId: ''
+      groupId: '',
+      roleId: ''
     });
     onClose();
   };
@@ -140,12 +146,35 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
               />
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t('users.userType')} *
+              </label>
+              <select
+                name="roleId"
+                value={formData.roleId || ''}
+                onChange={handleChange}
+                className="input-field"
+                disabled={isSubmitting}
+              >
+                <option value="" disabled>
+                  {t('users.selectUserType')}
+                </option>
+                <option value="1">{t('users.admin')}</option>
+                <option value="3">{t('users.director')}</option>
+                <option value="2">{t('users.regularUser')}</option>
+              </select>
+            </div>
+
             {/* Group */}
-            <RecursiveGroupSelector
-              value={formData.groupId}
-              onChange={(groupId) => setFormData({ ...formData, groupId })}
-              disabled={isSubmitting}
-            />
+            {(isGroupActive || formData.roleId === 2) && (
+                <RecursiveGroupSelector
+                  value={formData.groupId}
+                  onChange={(groupId) => setFormData({ ...formData, groupId })}
+                  disabled={isSubmitting}
+                />
+            )}
+
 
             {/* Status */}
             <div>

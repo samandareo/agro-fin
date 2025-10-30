@@ -26,21 +26,29 @@ exports.findByIdAndDelete = async (id) => {
 }
 
 exports.findByIdAndUpdate = async (id, data) => {
-    const { name, telegramId, password, groupId } = data;
+    const { name, telegramId, password, groupId, roleId } = data;
     let status = data.status;
 
+    const role = await pool.query(
+        "SELECT * FROM roles WHERE id = $1",
+        [Number(roleId)]
+    );
+
+    if (!role.rows[0]) {
+        throw new Error("Invalid role ID");
+    }
     let rows;
     if (password) {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         rows = await pool.query(
-            "UPDATE users SET name = $1, telegram_id = $2, password = $3, status = $4 WHERE id = $5 RETURNING *",
-            [name, telegramId, hashedPassword, status, id]
+            "UPDATE users SET name = $1, telegram_id = $2, password = $3, status = $4, role = $5, role_id = $6 WHERE id = $7 RETURNING *",
+            [name, telegramId, hashedPassword, status, role.rows[0].name, Number(roleId), id]
         );
     } else {
         rows = await pool.query(
-            "UPDATE users SET name = $1, telegram_id = $2, status = $3 WHERE id = $4 RETURNING *",
-            [name, telegramId, status, id]
+            "UPDATE users SET name = $1, telegram_id = $2, status = $3, role = $4, role_id = $5 WHERE id = $6 RETURNING *",
+            [name, telegramId, status, role.rows[0].name, Number(roleId), id]
         );
     }
 
@@ -54,25 +62,27 @@ exports.findByIdAndUpdate = async (id, data) => {
 
 exports.findByTelegramId = async (telegramId) => {
     const { rows } = await pool.query(
-        "SELECT * FROM users WHERE telegram_id = $1 AND status = TRUE AND role = 'user'",
+        "SELECT * FROM users WHERE telegram_id = $1 AND status = TRUE",
         [telegramId]
     );
     return rows[0] || null;
 }
 
 exports.create = async (data) => {
-    const { name, telegramId, password, status, role } = data;
+    const { name, telegramId, password, status, roleId } = data;
 
     const { rows: roleRows } = await pool.query(
-        "SELECT * FROM roles WHERE name = $1",
-        [role]
+        "SELECT * FROM roles WHERE id = $1",
+        [Number(roleId)]
     );
-    const roleId = roleRows[0].id;
+    const role = roleRows[0].name;
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    console.log(`Creating user with role: ${role}, roleId: ${roleId}, name: ${name}, telegramId: ${telegramId}, status: ${status}`);
+    console.log(` Types - role: ${typeof role}, roleId: ${typeof roleId}, name: ${typeof name}, telegramId: ${typeof telegramId}, status: ${typeof status}`);
     const { rows } = await pool.query(
         "INSERT INTO users (name, telegram_id, password, status, role, role_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-        [name, telegramId, hashedPassword, status, role, roleId]
+        [name, telegramId, hashedPassword, status, role, Number(roleId)]
     );
     return rows[0] || null;
 }
@@ -105,7 +115,7 @@ exports.searchUsers = async (filters) => {
         FROM users u
         LEFT JOIN user_groups ug ON u.id = ug.user_id
         LEFT JOIN groups g ON ug.group_id = g.id
-        WHERE u.role = 'user'
+        WHERE u.role = 'user' OR u.role = 'director'
     `;
     
     const values = [];

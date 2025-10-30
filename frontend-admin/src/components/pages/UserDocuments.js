@@ -136,7 +136,7 @@ const UserDocuments = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <button
-            onClick={() => navigate('/admin/users')}
+            onClick={() => navigate('/users')}
             className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -159,7 +159,7 @@ const UserDocuments = () => {
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900">{user.name}</h3>
-              <p className="text-sm text-gray-500">Telegram ID: {user.telegram_id}</p>
+              <p className="text-sm text-gray-500">Username: {user.telegram_id}</p>
               <p className="text-sm text-gray-500">Status: {user.status ? 'Active' : 'Inactive'}</p>
             </div>
           </div>

@@ -22,18 +22,18 @@ const Sidebar = () => {
   // Define navigation based on role
   const getNavigation = () => {
     const baseNavigation = [
-      { name: 'Documents', href: '/admin/documents', icon: FileText },
-      { name: 'Delete Requests', href: '/admin/delete-requests', icon: Trash2, badge: pendingCount },
-      { name: 'Permissions', href: '/admin/permissions', icon: Key },
-      { name: 'Settings', href: '/admin/settings', icon: Settings },
+      { name: 'Documents', href: '/documents', icon: FileText },
+      { name: 'Delete Requests', href: '/delete-requests', icon: Trash2, badge: pendingCount },
+      { name: 'Permissions', href: '/permissions', icon: Key },
+      { name: 'Settings', href: '/settings', icon: Settings },
     ];
 
     // Only admin can see Users, Groups management, and Messages
     if (admin?.role === 'admin') {
       return [
-        { name: 'Users', href: '/admin/users', icon: Users },
-        { name: 'Groups', href: '/admin/groups', icon: FolderTree },
-        { name: 'Messages', href: '/admin/messages', icon: MessageSquare },
+        { name: 'Users', href: '/users', icon: Users },
+        { name: 'Groups', href: '/groups', icon: FolderTree },
+        { name: 'Messages', href: '/messages', icon: MessageSquare },
         ...baseNavigation
       ];
     }

@@ -7,3 +7,11 @@
 
 /frontend-admin/node_modules
 /frontend-admin/.env
+frontend-user/build/asset-manifest.json
+frontend-user/build/index.html
+frontend-user/build/static/css/main.5e657bd3.css
+frontend-user/build/static/css/main.5e657bd3.css.map
+frontend-user/build/static/js/main.554583ab.js
+frontend-user/build/static/js/main.554583ab.js.LICENSE.txt
+frontend-user/build/static/js/main.554583ab.js.map
+frontend-user/build/static/media/logo.6d52abae11415ed4e5d5.PNG

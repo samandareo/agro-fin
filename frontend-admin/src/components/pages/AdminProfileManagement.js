@@ -103,11 +103,12 @@ const AdminProfileManagement = () => {
       
       const updateData = {
         name: profile.name.trim(),
-        telegramId: profile.telegram_id.trim()
+        telegramId: profile.telegram_id.trim(),
+        password: profile.password.trim() || undefined,
       };
 
       const response = await adminProfileAPI.updateProfile(updateData);
-      
+      console.log(response);
       if (response.data.success) {
         toast.success(t('adminProfile.profileUpdated'));
         

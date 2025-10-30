@@ -194,32 +194,38 @@ exports.getUser = async (req, res, next) => {
 
 exports.createUser = async (req, res, next) => {
     try {
-        const { name, telegramId, password, groupId } = req.body;
+        const { name, telegramId, password, groupId, roleId } = req.body;
         let status = req.body.status;
 
-        if (!name || !telegramId || !password || !groupId) {
+        if (!name || !telegramId || !password) {
+            if (req.user.role !== 'admin' && req.user.role !== 'director') {
+                if (!groupId) {
+                    return ApiResponse.badRequest("All fields are required").send(res);
+                }
+            }
             return ApiResponse.badRequest("All fields are required").send(res);
         }
 
         const existingUser = await User.findByTelegramId(telegramId);
-
         if (existingUser) {
             return ApiResponse.badRequest("User already exists").send(res);
         }
 
-        const user = await User.create({ name, telegramId, password, status, role: "user" });
+        const user = await User.create({ name, telegramId, password, status, roleId: Number(roleId) });
 
         if (!user) {
             return ApiResponse.error("Failed to create user").send(res);
         }
-
-        const userGroup = await User.assignToGroup(user.id, groupId);
-        if (!userGroup) {
-            return ApiResponse.error("Failed to assign user to group").send(res);
+    
+        if (user.role === 'user') {
+            const userGroup = await User.assignToGroup(user.id, groupId);
+            if (!userGroup) {
+                return ApiResponse.error("Failed to assign user to group").send(res);
+            }
         }
 
-        const accessToken = jwt.generateAccessToken({ id: user.id, telegramId: user.telegramId, role: "user" });
-        const refreshToken = jwt.generateRefreshToken({ id: user.id, telegramId: user.telegramId, role: "user" });
+        const accessToken = jwt.generateAccessToken({ id: user.id, telegramId: user.telegramId, role: user.role });
+        const refreshToken = jwt.generateRefreshToken({ id: user.id, telegramId: user.telegramId, role: user.role });
 
         return ApiResponse.success({ accessToken:accessToken, refreshToken:refreshToken }, "User created successfully").send(res);
 
@@ -231,7 +237,7 @@ exports.createUser = async (req, res, next) => {
 exports.updateUser = async (req, res, next) => {
     try {
         const { userId } = req.params;
-        const { name, telegramId, password, groupId } = req.body;
+        const { name, telegramId, password, groupId, roleId } = req.body;
 
         let status = req.body.status;
 
@@ -239,11 +245,16 @@ exports.updateUser = async (req, res, next) => {
             return ApiResponse.badRequest("User ID is required").send(res);
         }
 
-        if (!name || !telegramId || !groupId) {
+        if (!name || !telegramId) {
+            if (req.user.role !== 'admin' && req.user.role !== 'director') {
+                if (!groupId) {
+                    return ApiResponse.badRequest("All fields are required").send(res);
+                }
+            }
             return ApiResponse.badRequest("All fields are required").send(res);
         }
 
-        const updatedUser = await User.findByIdAndUpdate(userId, { name, telegramId, password, status, groupId });
+        const updatedUser = await User.findByIdAndUpdate(userId, { name, telegramId, password, status, groupId, roleId: Number(roleId) });
 
         if (!updatedUser) {
             return ApiResponse.badRequest("User not found").send(res);
@@ -460,6 +471,7 @@ exports.updateAdmin = async (req, res, next) => {
         const { id } = req.admin;
         const { name, telegramId, password } = req.body;
 
+        console.log(password);
         if (!name || !telegramId) {
             return ApiResponse.badRequest("All fields are required").send(res);
         }

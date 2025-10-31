@@ -69,7 +69,7 @@ const DeleteRequestsPage = () => {
                   ) : (
                     deleteRequests.map((request) => {
                       const requestDate = formatDate(request.created_at);
-                      const documentDate = formatDate(request.document_created_at);
+                      const documentDate = formatDate(request.document_upload_at);
                       
                       return (
                         <tr key={request.id} className="hover:bg-gray-50">

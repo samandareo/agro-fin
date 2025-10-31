@@ -13,6 +13,7 @@ exports.findAll = async (filters = {}) => {
         SELECT dr.*, 
                d.title as document_title,
                d.file_path,
+               d.upload_at as document_upload_at,
                u.name as requester_name,
                u.telegram_id as requester_telegram_id
         FROM delete_requests dr
@@ -87,7 +88,7 @@ exports.findUserDeleteRequests = async (userId) => {
         SELECT dr.*, 
                d.title as document_title,
                d.file_path,
-               d.created_at as document_created_at,
+               d.upload_at as document_upload_at,
                g.name as group_name
         FROM delete_requests dr
         LEFT JOIN documents d ON dr.document_id = d.id

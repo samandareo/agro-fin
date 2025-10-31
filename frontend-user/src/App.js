@@ -5,10 +5,12 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { DocumentProvider } from './contexts/DocumentContext';
 import { DeleteRequestProvider } from './contexts/DeleteRequestContext';
 import { NotificationsProvider } from './contexts/NotificationsContext';
+import { TasksProvider } from './contexts/TasksContext';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import DeleteRequestsPage from './components/DeleteRequestsPage';
 import NotificationsPage from './components/NotificationsPage';
+import TasksPage from './components/TasksPage';
 import Header from './components/Header';
 import LanguageSwitcher from './components/LanguageSwitcher';
 
@@ -35,6 +37,7 @@ const AppLayout = () => {
           <Route path="/" element={<Dashboard />} />
           <Route path="/delete-requests" element={<DeleteRequestsPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/tasks" element={<TasksPage />} />
         </Routes>
       </main>
     </div>
@@ -55,7 +58,9 @@ const App = () => {
                   <DocumentProvider>
                     <DeleteRequestProvider>
                       <NotificationsProvider>
-                        <AppLayout />
+                        <TasksProvider>
+                          <AppLayout />
+                        </TasksProvider>
                       </NotificationsProvider>
                     </DeleteRequestProvider>
                   </DocumentProvider>

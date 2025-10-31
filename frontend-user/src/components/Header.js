@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotifications } from '../contexts/NotificationsContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LogOut, FileText, Trash2, Bell } from 'lucide-react';
+import { LogOut, FileText, Trash2, Bell, CheckSquare } from 'lucide-react';
 import LanguageSwitcher from './LanguageSwitcher';
 const Logo = require('../assets/logo.PNG');
 
@@ -57,13 +57,24 @@ const Header = () => {
               <button
                 onClick={() => navigate('/delete-requests')}
                 className={`inline-flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
-                  isActive('/delete-requests') 
-                    ? 'bg-brand-100 text-brand-700' 
+                  isActive('/delete-requests')
+                    ? 'bg-brand-100 text-brand-700'
                     : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
                 }`}
               >
                 <Trash2 className="h-4 w-4 mr-2" />
                 {t('navigation.deleteRequests')}
+              </button>
+              <button
+                onClick={() => navigate('/tasks')}
+                className={`inline-flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                  isActive('/tasks')
+                    ? 'bg-brand-100 text-brand-700'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <CheckSquare className="h-4 w-4 mr-2" />
+                {t('navigation.tasks')}
               </button>
             </nav>
             

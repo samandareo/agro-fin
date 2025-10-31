@@ -23,7 +23,7 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
         telegramId: user.telegram_id || '',
         password: '',
         status: user.status !== undefined ? user.status : true,
-        groupId: user.role_id !== 3 ? (user.group_id || '') : null,
+        groupId: user.group_id || '',
         roleId: user.role_id || ''
       });
     } else {
@@ -41,7 +41,7 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setIsGroupActive(name === 'roleId' && (value === '2'));
+    setIsGroupActive(name === 'roleId' && (value === '2' || value === '3'));
     setFormData({
       ...formData,
       [name]: type === 'checkbox' ? checked : value
@@ -167,7 +167,7 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
             </div>
 
             {/* Group */}
-            {(isGroupActive || formData.roleId === 2) && (
+            {(isGroupActive || formData.roleId === 2 || formData.roleId === 3) && (
                 <RecursiveGroupSelector
                   value={formData.groupId}
                   onChange={(groupId) => setFormData({ ...formData, groupId })}

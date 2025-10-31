@@ -100,10 +100,19 @@ exports.getAllUploadedDocumentsByGroup = async (req, res, next) => {
 
 exports.createDocument = async (req, res, next) => {
     try {
-        const { title } = req.body;
+        const { title, uploadAt } = req.body;
 
         if (!title || !req.file) {
             return ApiResponse.badRequest("All fields are required").send(res);
+        }
+
+        // Validate uploadAt date if provided
+        let uploadDate = null;
+        if (uploadAt) {
+            uploadDate = new Date(uploadAt);
+            if (isNaN(uploadDate.getTime())) {
+                return ApiResponse.badRequest("Invalid date format for uploadAt").send(res);
+            }
         }
 
         const uploaderId = req.user.id;
@@ -118,7 +127,16 @@ exports.createDocument = async (req, res, next) => {
         const groupName = userGroup.name;
         const groupId = userGroup.id;
 
-        const document = await Document.create({ title, groupId, uploaderId, filePath, uploaderName, uploaderTelegramId, groupName })
+        const document = await Document.create({ 
+            title, 
+            groupId, 
+            uploaderId, 
+            filePath, 
+            uploaderName, 
+            uploaderTelegramId, 
+            groupName,
+            uploadAt: uploadDate
+        })
 
         if (!document) {
             return ApiResponse.error("Failed to create document").send(res);
@@ -133,11 +151,20 @@ exports.createDocument = async (req, res, next) => {
 exports.updateDocument = async (req, res, next) => {
     try {
         const { documentId } = req.params;
-        const { title } = req.body;
+        const { title, uploadAt } = req.body;
 
         const existingDocument = await Document.findOne(documentId);
         if (!existingDocument) {
             return ApiResponse.badRequest("Document not found").send(res);
+        }
+
+        // Validate uploadAt date if provided
+        let uploadDate = null;
+        if (uploadAt) {
+            uploadDate = new Date(uploadAt);
+            if (isNaN(uploadDate.getTime())) {
+                return ApiResponse.badRequest("Invalid date format for uploadAt").send(res);
+            }
         }
 
         const uploaderId = req.user.id;
@@ -149,6 +176,10 @@ exports.updateDocument = async (req, res, next) => {
 
         if (title) {
             updateData.title = title;
+        }
+
+        if (uploadDate) {
+            updateData.uploadAt = uploadDate;
         }
 
         if (req.file) {
@@ -497,11 +528,125 @@ exports.getUserFilterOptions = async (req, res, next) => {
     }
 }
 
+// exports.downloadDocument = async (req, res, next) => {
+//     try {
+//         const { documentId } = req.params;
+        
+//         // Handle both user and admin requests
+//         const userId = req.user?.id || req.admin?.id;
+//         const userRole = req.user?.role || (req.admin ? 'admin' : null);
+
+//         if (!userId || !userRole) {
+//             return ApiResponse.unauthorized("You are not authorized to access this resource").send(res);
+//         }
+
+//         if (!documentId) {
+//             return ApiResponse.badRequest("Document ID is required").send(res);
+//         }
+
+//         const document = await Document.findOne(documentId);
+//         if (!document) {
+//             return ApiResponse.badRequest("Document not found").send(res);
+//         }
+
+//         if (userRole !== 'admin') {
+//             const userGroup = await User.findUserGroup(userId);
+//             if (!userGroup || userGroup.id !== document.group_id) {
+//                 return ApiResponse.forbidden("You don't have permission to download this document").send(res);
+//             }
+//         }
+
+//         const filePath = path.join(__dirname, '..', 'agro-reports', document.file_path);
+//         if (!fileExists(document.file_path)) {
+//             return ApiResponse.badRequest("File not found on server").send(res);
+//         }
+
+//         const fileName = document.title + path.extname(document.file_path);
+//         res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
+//         res.setHeader('Content-Type', 'application/octet-stream');
+
+//         const fileStream = fs.createReadStream(filePath);
+        
+//         fileStream.on('error', (error) => {
+//             console.error('Error streaming file:', error);
+//             if (!res.headersSent) {
+//                 return ApiResponse.error("Error reading file").send(res);
+//             }
+//         });
+
+//         fileStream.pipe(res);
+
+//         console.log(`Document ${documentId} downloaded by user ${userId} (${userRole})`);
+
+//     } catch (error) {
+//         console.error('Download error:', error);
+//         return ApiResponse.error(error.message).send(res);
+//     }
+// }
+
+// exports.getDocumentInfo = async (req, res, next) => {
+//     try {
+//         const { documentId } = req.params;
+        
+//         // Handle both user and admin requests
+//         const userId = req.user?.id || req.admin?.id;
+//         const userRole = req.user?.role || (req.admin ? 'admin' : null);
+
+//         if (!userId || !userRole) {
+//             return ApiResponse.unauthorized("You are not authorized to access this resource").send(res);
+//         }
+
+//         if (!documentId) {
+//             return ApiResponse.badRequest("Document ID is required").send(res);
+//         }
+
+//         const document = await Document.findOne(documentId);
+//         if (!document) {
+//             return ApiResponse.badRequest("Document not found").send(res);
+//         }
+
+//         if (userRole !== 'admin') {
+//             const userGroup = await User.findUserGroup(userId);
+//             if (!userGroup || userGroup.id !== document.group_id) {
+//                 return ApiResponse.forbidden("You don't have permission to access this document").send(res);
+//             }
+//         }
+
+//         const fileExists = require("../utils/fileUtils").fileExists;
+//         const fileExistsOnServer = fileExists(document.file_path);
+
+//         let fileSize = 0;
+//         if (fileExistsOnServer) {
+//             const filePath = path.join(__dirname, '..', 'agro-reports', document.file_path);
+//             try {
+//                 const stats = fs.statSync(filePath);
+//                 fileSize = stats.size;
+//             } catch (error) {
+//                 console.error('Error getting file stats:', error);
+//             }
+//         }
+
+//         return ApiResponse.success({
+//             id: document.id,
+//             title: document.title,
+//             fileName: document.file_path,
+//             fileSize: fileSize,
+//             fileExists: fileExistsOnServer,
+//             uploaderName: document.uploader_name,
+//             groupName: document.group_name,
+//             createdAt: document.created_at,
+//             downloadUrl: `/api/documents/${documentId}/download`
+//         }, "Document info retrieved successfully").send(res);
+
+//     } catch (error) {
+//         return ApiResponse.error(error.message).send(res);
+//     }
+// }
+
 exports.downloadDocument = async (req, res, next) => {
     try {
         const { documentId } = req.params;
         
-        // Handle both user and admin requests
         const userId = req.user?.id || req.admin?.id;
         const userRole = req.user?.role || (req.admin ? 'admin' : null);
 
@@ -519,8 +664,24 @@ exports.downloadDocument = async (req, res, next) => {
         }
 
         if (userRole !== 'admin') {
-            const userGroup = await User.findUserGroup(userId);
-            if (!userGroup || userGroup.id !== document.group_id) {
+            // Check if user has access to this document's group hierarchy
+            const pool = require("../config/db");
+            const accessQuery = `
+                WITH RECURSIVE group_tree AS (
+                    SELECT id FROM groups WHERE id IN (
+                        SELECT group_id FROM user_groups WHERE user_id = $1
+                    )
+                    
+                    UNION ALL
+                    
+                    SELECT g.id FROM groups g
+                    INNER JOIN group_tree gt ON g.parent_id = gt.id
+                )
+                SELECT COUNT(*) FROM group_tree WHERE id = $2
+            `;
+            const accessResult = await pool.query(accessQuery, [userId, document.group_id]);
+            
+            if (parseInt(accessResult.rows[0].count) === 0) {
                 return ApiResponse.forbidden("You don't have permission to download this document").send(res);
             }
         }
@@ -544,7 +705,6 @@ exports.downloadDocument = async (req, res, next) => {
         });
 
         fileStream.pipe(res);
-
         console.log(`Document ${documentId} downloaded by user ${userId} (${userRole})`);
 
     } catch (error) {
@@ -557,7 +717,6 @@ exports.getDocumentInfo = async (req, res, next) => {
     try {
         const { documentId } = req.params;
         
-        // Handle both user and admin requests
         const userId = req.user?.id || req.admin?.id;
         const userRole = req.user?.role || (req.admin ? 'admin' : null);
 
@@ -575,13 +734,28 @@ exports.getDocumentInfo = async (req, res, next) => {
         }
 
         if (userRole !== 'admin') {
-            const userGroup = await User.findUserGroup(userId);
-            if (!userGroup || userGroup.id !== document.group_id) {
+            // Check if user has access to this document's group hierarchy
+            const pool = require("../config/db");
+            const accessQuery = `
+                WITH RECURSIVE group_tree AS (
+                    SELECT id FROM groups WHERE id IN (
+                        SELECT group_id FROM user_groups WHERE user_id = $1
+                    )
+                    
+                    UNION ALL
+                    
+                    SELECT g.id FROM groups g
+                    INNER JOIN group_tree gt ON g.parent_id = gt.id
+                )
+                SELECT COUNT(*) FROM group_tree WHERE id = $2
+            `;
+            const accessResult = await pool.query(accessQuery, [userId, document.group_id]);
+            
+            if (parseInt(accessResult.rows[0].count) === 0) {
                 return ApiResponse.forbidden("You don't have permission to access this document").send(res);
             }
         }
 
-        const fileExists = require("../utils/fileUtils").fileExists;
         const fileExistsOnServer = fileExists(document.file_path);
 
         let fileSize = 0;

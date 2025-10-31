@@ -109,13 +109,13 @@ exports.comparePassword = async (password, hashedPassword) => {
 
 exports.searchUsers = async (filters) => {
     let query = `
-        SELECT u.*, 
+        SELECT u.*,
                g.name as group_name,
                g.id as group_id
         FROM users u
         LEFT JOIN user_groups ug ON u.id = ug.user_id
         LEFT JOIN groups g ON ug.group_id = g.id
-        WHERE u.role = 'user' OR u.role = 'director'
+        WHERE (u.role = 'user' OR u.role = 'director')
     `;
     
     const values = [];
@@ -175,7 +175,7 @@ exports.countUsersWithFilters = async (filters) => {
         SELECT COUNT(DISTINCT u.id) as total
         FROM users u
         LEFT JOIN user_groups ug ON u.id = ug.user_id
-        WHERE u.role = 'user'
+        WHERE (u.role = 'user' OR u.role = 'director')
     `;
     
     const values = [];

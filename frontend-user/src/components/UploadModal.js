@@ -7,7 +7,8 @@ const UploadModal = ({ isOpen, onClose }) => {
   const { createDocument } = useDocuments();
   const [formData, setFormData] = useState({
     title: '',
-    file: null
+    file: null,
+    uploadAt: ''
   });
   const [loading, setLoading] = useState(false);
 
@@ -37,11 +38,14 @@ const UploadModal = ({ isOpen, onClose }) => {
     const uploadData = new FormData();
     uploadData.append('title', formData.title);
     uploadData.append('file', formData.file);
+    if (formData.uploadAt) {
+      uploadData.append('uploadAt', formData.uploadAt);
+    }
 
     const result = await createDocument(uploadData);
     
     if (result.success) {
-      setFormData({ title: '', file: null });
+      setFormData({ title: '', file: null, uploadAt: '' });
       onClose();
     }
     
@@ -49,7 +53,7 @@ const UploadModal = ({ isOpen, onClose }) => {
   };
 
   const handleClose = () => {
-    setFormData({ title: '', file: null });
+    setFormData({ title: '', file: null, uploadAt: '' });
     onClose();
   };
 
@@ -85,6 +89,21 @@ const UploadModal = ({ isOpen, onClose }) => {
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t('uploadModal.uploadDate')} (Optional)
+              </label>
+              <input
+                type="date"
+                className="input-field"
+                value={formData.uploadAt}
+                onChange={(e) => setFormData({ ...formData, uploadAt: e.target.value })}
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                {t('uploadModal.uploadDateHelp')}
+              </p>
             </div>
 
             <div>

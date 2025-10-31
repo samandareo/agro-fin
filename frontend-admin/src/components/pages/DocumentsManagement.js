@@ -320,7 +320,7 @@ const DocumentsManagement = () => {
                     <td className="table-cell text-sm text-gray-900">
                       <div className="flex items-center">
                         <Calendar className="h-4 w-4 mr-2 text-gray-400" />
-                        {formatDateToDDMMYYYY(document.created_at)}
+                        {formatDateToDDMMYYYY(document.upload_at)}
                       </div>
                     </td>
                     <td className="table-cell">

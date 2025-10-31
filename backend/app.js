@@ -24,6 +24,7 @@ app.use("/api/v1/permissions", require("./routes/permissionRoute"));
 app.use("/api/v1/role-permissions", require("./routes/rolePermissionRoutes"));
 app.use("/api/v1/delete-requests", require("./routes/deleteRequestRoutes"));
 app.use("/api/v1/notifications", require("./routes/notificationRoutes"));
+app.use("/api/v1/tasks", require("./routes/taskRoutes"));
 
 app.use(errorHandler);
 

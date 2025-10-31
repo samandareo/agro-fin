@@ -1,12 +1,10 @@
 import axios from 'axios';
 
 const API_BASE_URL = 'https://agro-fin.onrender.com/api/v1';
+// const API_BASE_URL = 'http://localhost:5000/api/v1';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 api.interceptors.request.use(
@@ -15,6 +13,18 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Only set Content-Type to application/json if data is not FormData
+    // FormData will automatically set the correct Content-Type with boundary
+    if (!(config.data instanceof FormData)) {
+      if (!config.headers['Content-Type']) {
+        config.headers['Content-Type'] = 'application/json';
+      }
+    } else {
+      // Delete Content-Type for FormData so axios can set it with the boundary
+      delete config.headers['Content-Type'];
+    }
+
     return config;
   },
   (error) => {
@@ -95,6 +105,18 @@ export const notificationsAPI = {
   getUnreadCount: () => api.get('/notifications/user/unread-count'),
   markAsRead: (notificationId) => api.put(`/notifications/user/mark-read/${notificationId}`),
   markAllAsRead: () => api.put('/notifications/user/mark-all-read'),
+};
+
+export const tasksAPI = {
+  getMyTasks: () => api.get('/tasks/user/my-tasks'),
+
+  getTaskDetail: (taskId) => api.get(`/tasks/user/${taskId}`),
+
+  updateTaskStatus: (taskId, status) => api.put(`/tasks/user/${taskId}/status`, { status }),
+
+  downloadFile: (fileId) => api.get(`/tasks/files/${fileId}/download`, {
+    responseType: 'blob'
+  }),
 };
 
 export default api;

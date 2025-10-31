@@ -3,9 +3,7 @@ import axios from 'axios';
 const api = axios.create({
   // baseURL: 'http://fin.agrobank.uz/api/v1',
   baseURL: 'https://agro-fin.onrender.com/api/v1',
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  // baseURL: 'http://localhost:5000/api/v1',
 });
 
 api.interceptors.request.use(
@@ -14,6 +12,18 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Only set Content-Type to application/json if data is not FormData
+    // FormData will automatically set the correct Content-Type with boundary
+    if (!(config.data instanceof FormData)) {
+      if (!config.headers['Content-Type']) {
+        config.headers['Content-Type'] = 'application/json';
+      }
+    } else {
+      // Delete Content-Type for FormData so axios can set it with the boundary
+      delete config.headers['Content-Type'];
+    }
+
     return config;
   },
   (error) => {
@@ -126,6 +136,34 @@ export const notificationsAPI = {
   sendNotification: (messageData) => api.post('/notifications/admin/send', messageData),
   getAll: (params) => api.get('/notifications/admin/all', { params }),
   delete: (notificationId) => api.delete(`/notifications/admin/${notificationId}`),
+};
+
+export const tasksAPI = {
+  getAll: (params) => api.get('/tasks/admin/all', { params }),
+
+  getActiveAdmin: (params) => api.get('/tasks/admin/active-tasks', { params }),
+
+  getArchivedAdmin: (params) => api.get('/tasks/admin/archived-tasks', { params }),
+
+  getDetail: (taskId) => api.get(`/tasks/admin/${taskId}/detail`),
+
+  create: (taskData) => api.post('/tasks/admin/create', taskData),
+
+  update: (taskId, taskData) => api.put(`/tasks/admin/${taskId}`, taskData),
+
+  delete: (taskId) => api.delete(`/tasks/admin/${taskId}`),
+
+  assignUser: (taskId, userId) => api.post(`/tasks/admin/${taskId}/assign`, { userId }),
+
+  removeUser: (taskId, userId) => api.delete(`/tasks/admin/${taskId}/user/${userId}`),
+
+  getTaskUsers: (taskId) => api.get(`/tasks/admin/${taskId}/users`),
+
+  uploadFile: (taskId, formData) => api.post(`/tasks/admin/${taskId}/upload-file`, formData),
+
+  downloadFile: (fileId) => api.get(`/tasks/file/${fileId}/download`, { responseType: 'blob' }),
+
+  deleteFile: (fileId) => api.delete(`/tasks/admin/file/${fileId}`),
 };
 
 export default api;

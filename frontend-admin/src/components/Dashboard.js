@@ -13,6 +13,7 @@ import DeleteRequestsManagement from './pages/DeleteRequestsManagement';
 import PermissionsManagement from './pages/PermissionsManagement';
 import AdminProfileManagement from './pages/AdminProfileManagement';
 import MessagesManagement from './pages/MessagesManagement';
+import TasksManagement from './pages/TasksManagement';
 
 const Dashboard = () => {
   const { admin } = useAuth();
@@ -54,6 +55,7 @@ const Dashboard = () => {
                     <Route path="/users" element={<UsersManagement />} />
                     <Route path="/users/:userId/documents" element={<UserDocuments />} />
                     <Route path="/groups" element={<GroupsManagement />} />
+                    <Route path="/tasks" element={<TasksManagement />} />
                     <Route path="/messages" element={<MessagesManagement />} />
                   </>
                 )}

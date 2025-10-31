@@ -1,13 +1,14 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { 
-  Users, 
-  FolderTree, 
-  FileText, 
-  Trash2, 
+import {
+  Users,
+  FolderTree,
+  FileText,
+  Trash2,
   Key,
   Settings,
-  MessageSquare
+  MessageSquare,
+  CheckSquare
 } from 'lucide-react';
 import Logo from '../../assets/logo.PNG';
 import { useDeleteRequests } from '../../contexts/DeleteRequestsContext';
@@ -33,6 +34,7 @@ const Sidebar = () => {
       return [
         { name: 'Users', href: '/users', icon: Users },
         { name: 'Groups', href: '/groups', icon: FolderTree },
+        { name: 'Tasks', href: '/tasks', icon: CheckSquare },
         { name: 'Messages', href: '/messages', icon: MessageSquare },
         ...baseNavigation
       ];

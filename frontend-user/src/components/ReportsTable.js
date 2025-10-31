@@ -117,7 +117,7 @@ const ReportsTable = () => {
                 </tr>
               ) : (
                 documents.map((document) => {
-                  const dateInfo = formatDate(document.created_at);
+                  const dateInfo = formatDate(document.upload_at);
                   return (
                     <tr key={document.id} className="hover:bg-gray-50">
                       <td className="table-cell">

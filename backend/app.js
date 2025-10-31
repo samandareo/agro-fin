@@ -6,7 +6,15 @@ const errorHandler = require("./middlewares/error");
 const app = express();
 
 // Middlewares
-app.use(cors());
+app.use(cors({
+  origin: [
+    "https://agro-fin-user.vercel.app",
+    "https://agro-fin-admin.vercel.app",
+    "http://localhost:3000",
+    "http://localhost:3001"
+  ],
+  credentials: true
+}));
 app.use(express.json());
 app.use(morgan("dev"));
 

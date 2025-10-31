@@ -351,6 +351,86 @@ exports.getArchivedTasksAdmin = async (req, res, next) => {
     }
 };
 
+// ==================== DIRECTOR ENDPOINTS ====================
+
+// GET: Get active tasks (director) - tasks created by this director where NOT all users have completed
+exports.getActiveTasksDirector = async (req, res, next) => {
+    try {
+        const createdById = req.admin.id;
+        const { page = 1, limit = 20 } = req.query;
+
+        const pageNum = parseInt(page);
+        const limitNum = parseInt(limit);
+
+        if (isNaN(pageNum) || pageNum < 1) {
+            return ApiResponse.badRequest("Invalid page number").send(res);
+        }
+
+        if (isNaN(limitNum) || limitNum < 1 || limitNum > 100) {
+            return ApiResponse.badRequest("Invalid limit (1-100)").send(res);
+        }
+
+        const offset = (pageNum - 1) * limitNum;
+
+        const tasks = await Task.getActiveTasksDirector(createdById, limitNum, offset);
+        const totalCount = await Task.countActiveTasksDirector(createdById);
+        const totalPages = Math.ceil(totalCount / limitNum);
+
+        return ApiResponse.success({
+            tasks,
+            pagination: {
+                currentPage: pageNum,
+                totalPages,
+                totalCount,
+                limit: limitNum,
+                hasNext: pageNum < totalPages,
+                hasPrev: pageNum > 1
+            }
+        }, "Active tasks fetched successfully").send(res);
+    } catch (error) {
+        return ApiResponse.error(error.message).send(res);
+    }
+};
+
+// GET: Get archived tasks (director) - tasks created by this director where ALL users have completed
+exports.getArchivedTasksDirector = async (req, res, next) => {
+    try {
+        const createdById = req.admin.id;
+        const { page = 1, limit = 20 } = req.query;
+
+        const pageNum = parseInt(page);
+        const limitNum = parseInt(limit);
+
+        if (isNaN(pageNum) || pageNum < 1) {
+            return ApiResponse.badRequest("Invalid page number").send(res);
+        }
+
+        if (isNaN(limitNum) || limitNum < 1 || limitNum > 100) {
+            return ApiResponse.badRequest("Invalid limit (1-100)").send(res);
+        }
+
+        const offset = (pageNum - 1) * limitNum;
+
+        const tasks = await Task.getArchivedTasksDirector(createdById, limitNum, offset);
+        const totalCount = await Task.countArchivedTasksDirector(createdById);
+        const totalPages = Math.ceil(totalCount / limitNum);
+
+        return ApiResponse.success({
+            tasks,
+            pagination: {
+                currentPage: pageNum,
+                totalPages,
+                totalCount,
+                limit: limitNum,
+                hasNext: pageNum < totalPages,
+                hasPrev: pageNum > 1
+            }
+        }, "Archived tasks fetched successfully").send(res);
+    } catch (error) {
+        return ApiResponse.error(error.message).send(res);
+    }
+};
+
 // POST: Create a new task (admin only)
 exports.createTask = async (req, res, next) => {
     try {

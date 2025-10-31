@@ -436,6 +436,130 @@ exports.countArchivedTasksAdmin = async () => {
     return parseInt(rows[0]?.total) || 0;
 };
 
+// Get active tasks for director (tasks created by director, excluding archived)
+exports.getActiveTasksDirector = async (createdById, limit, offset) => {
+    const { rows } = await pool.query(`
+        SELECT
+            t.id,
+            t.title,
+            t.description,
+            t.deadline,
+            t.created_at,
+            t.status,
+            u.name as created_by_name,
+            u.id as created_by_id,
+            COUNT(DISTINCT tu.user_id) as assigned_users_count
+        FROM tasks t
+        LEFT JOIN users u ON t.created_by = u.id
+        LEFT JOIN tasks_users tu ON t.id = tu.task_id
+        WHERE t.created_by = $1
+        AND t.id NOT IN (
+            -- Exclude tasks where ALL users have completed
+            SELECT t2.id
+            FROM tasks t2
+            WHERE NOT EXISTS (
+                SELECT 1 FROM tasks_users tu2
+                WHERE tu2.task_id = t2.id
+                AND tu2.status != 'completed'
+            )
+            AND EXISTS (
+                SELECT 1 FROM tasks_users tu3
+                WHERE tu3.task_id = t2.id
+            )
+        )
+        GROUP BY t.id, u.id, u.name
+        ORDER BY t.created_at DESC
+        LIMIT $2 OFFSET $3
+    `, [createdById, limit, offset]);
+    return rows || [];
+};
+
+// Get archived tasks for director (tasks created by director, where all users completed)
+exports.getArchivedTasksDirector = async (createdById, limit, offset) => {
+    const { rows } = await pool.query(`
+        SELECT
+            t.id,
+            t.title,
+            t.description,
+            t.deadline,
+            t.created_at,
+            t.status,
+            u.name as created_by_name,
+            u.id as created_by_id,
+            COUNT(DISTINCT tu.user_id) as assigned_users_count
+        FROM tasks t
+        LEFT JOIN users u ON t.created_by = u.id
+        LEFT JOIN tasks_users tu ON t.id = tu.task_id
+        WHERE t.created_by = $1
+        AND t.id IN (
+            -- Select tasks where ALL users have completed
+            SELECT t2.id
+            FROM tasks t2
+            WHERE NOT EXISTS (
+                SELECT 1 FROM tasks_users tu2
+                WHERE tu2.task_id = t2.id
+                AND tu2.status != 'completed'
+            )
+            AND EXISTS (
+                SELECT 1 FROM tasks_users tu3
+                WHERE tu3.task_id = t2.id
+            )
+        )
+        GROUP BY t.id, u.id, u.name
+        ORDER BY t.created_at DESC
+        LIMIT $2 OFFSET $3
+    `, [createdById, limit, offset]);
+    return rows || [];
+};
+
+// Count active tasks for director (tasks created by director)
+exports.countActiveTasksDirector = async (createdById) => {
+    const { rows } = await pool.query(`
+        SELECT COUNT(DISTINCT t.id) as total
+        FROM tasks t
+        WHERE t.created_by = $1
+        AND t.id NOT IN (
+            -- Exclude tasks where ALL users have completed
+            SELECT t2.id
+            FROM tasks t2
+            WHERE NOT EXISTS (
+                SELECT 1 FROM tasks_users tu2
+                WHERE tu2.task_id = t2.id
+                AND tu2.status != 'completed'
+            )
+            AND EXISTS (
+                SELECT 1 FROM tasks_users tu3
+                WHERE tu3.task_id = t2.id
+            )
+        )
+    `, [createdById]);
+    return parseInt(rows[0]?.total) || 0;
+};
+
+// Count archived tasks for director (tasks created by director, all users completed)
+exports.countArchivedTasksDirector = async (createdById) => {
+    const { rows } = await pool.query(`
+        SELECT COUNT(DISTINCT t.id) as total
+        FROM tasks t
+        WHERE t.created_by = $1
+        AND t.id IN (
+            -- Select tasks where ALL users have completed
+            SELECT t2.id
+            FROM tasks t2
+            WHERE NOT EXISTS (
+                SELECT 1 FROM tasks_users tu2
+                WHERE tu2.task_id = t2.id
+                AND tu2.status != 'completed'
+            )
+            AND EXISTS (
+                SELECT 1 FROM tasks_users tu3
+                WHERE tu3.task_id = t2.id
+            )
+        )
+    `, [createdById]);
+    return parseInt(rows[0]?.total) || 0;
+};
+
 // Get task with all details including users
 exports.getTaskWithDetails = async (taskId) => {
     const task = await exports.getTaskById(taskId);

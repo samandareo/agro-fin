@@ -26,7 +26,12 @@ exports.protectAdmin = async (req, res, next) => {
             return ApiResponse.unauthorized("You are not authorized to access this resource").send(res);
         }
 
-        if (admin.role !== "admin" && admin.telegramId !== decoded.telegramId) {
+        // Allow admin and director roles to access admin endpoints
+        if (admin.role !== "admin" && admin.role !== "director") {
+            return ApiResponse.unauthorized("You are not authorized to access this resource").send(res);
+        }
+
+        if (admin.telegramId !== decoded.telegramId) {
             return ApiResponse.unauthorized("You are not authorized to access this resource").send(res);
         }
 

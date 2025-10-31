@@ -49,16 +49,12 @@ const Dashboard = () => {
             <div className="p-6">
               <Routes>
                 <Route path="/" element={<Navigate to={getDefaultRoute()} replace />} />
-                {/* Admin-only routes */}
-                {admin?.role === 'admin' && (
-                  <>
-                    <Route path="/users" element={<UsersManagement />} />
-                    <Route path="/users/:userId/documents" element={<UserDocuments />} />
-                    <Route path="/groups" element={<GroupsManagement />} />
-                    <Route path="/tasks" element={<TasksManagement />} />
-                    <Route path="/messages" element={<MessagesManagement />} />
-                  </>
-                )}
+                {/* Admin and Director can access these routes - permissions are checked on backend */}
+                <Route path="/users" element={<UsersManagement />} />
+                <Route path="/users/:userId/documents" element={<UserDocuments />} />
+                <Route path="/groups" element={<GroupsManagement />} />
+                <Route path="/tasks" element={<TasksManagement />} />
+                <Route path="/messages" element={<MessagesManagement />} />
                 {/* Shared routes for both admin and director */}
                 <Route path="/documents" element={<DocumentsManagement />} />
                 <Route path="/delete-requests" element={<DeleteRequestsManagement />} />

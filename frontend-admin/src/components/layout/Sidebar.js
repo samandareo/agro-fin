@@ -29,19 +29,15 @@ const Sidebar = () => {
       { name: 'Settings', href: '/settings', icon: Settings },
     ];
 
-    // Only admin can see Users, Groups management, and Messages
-    if (admin?.role === 'admin') {
-      return [
-        { name: 'Users', href: '/users', icon: Users },
-        { name: 'Groups', href: '/groups', icon: FolderTree },
-        { name: 'Tasks', href: '/tasks', icon: CheckSquare },
-        { name: 'Messages', href: '/messages', icon: MessageSquare },
-        ...baseNavigation
-      ];
-    }
-
-    // Director can only see Documents, Delete Requests, Permissions, and Settings
-    return baseNavigation;
+    // Admin and Director can both see Users, Groups, Tasks, and Messages
+    // Backend permissions will control actual access
+    return [
+      { name: 'Users', href: '/users', icon: Users },
+      { name: 'Groups', href: '/groups', icon: FolderTree },
+      { name: 'Tasks', href: '/tasks', icon: CheckSquare },
+      { name: 'Messages', href: '/messages', icon: MessageSquare },
+      ...baseNavigation
+    ];
   };
 
   const navigation = getNavigation();

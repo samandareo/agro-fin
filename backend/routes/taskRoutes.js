@@ -13,8 +13,21 @@ router.put("/user/:taskId/status", protectUser, checkPermission("task:update"), 
 
 // Admin routes
 router.get("/admin/all", protectAdmin, checkPermission("task:read"), taskController.getAllTasks);
-router.get("/admin/active-tasks", protectAdmin, checkPermission("task:read"), taskController.getActiveTasksAdmin);
-router.get("/admin/archived-tasks", protectAdmin, checkPermission("task:read"), taskController.getArchivedTasksAdmin);
+
+// Route that handles both admin and director - calls appropriate method based on role
+router.get("/admin/active-tasks", protectAdmin, checkPermission("task:read"), (req, res, next) => {
+  if (req.admin.role === 'director') {
+    return taskController.getActiveTasksDirector(req, res, next);
+  }
+  taskController.getActiveTasksAdmin(req, res, next);
+});
+
+router.get("/admin/archived-tasks", protectAdmin, checkPermission("task:read"), (req, res, next) => {
+  if (req.admin.role === 'director') {
+    return taskController.getArchivedTasksDirector(req, res, next);
+  }
+  taskController.getArchivedTasksAdmin(req, res, next);
+});
 router.get("/admin/:taskId/detail", protectAdmin, checkPermission("task:read"), taskController.getTaskDetailAdmin);
 router.post("/admin/create", protectAdmin, checkPermission("task:create"), taskController.createTask);
 router.put("/admin/:taskId", protectAdmin, checkPermission("task:update"), taskController.updateTask);

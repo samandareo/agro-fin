@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download, FileText, Calendar, User, Folder } from 'lucide-react';
 import { documentsAPI } from '../../services/api';
 import { formatDateToDDMMYYYY } from '../../utils/fileUtils';
+import { handleContextError } from '../../utils/apiErrorHelper';
 import toast from 'react-hot-toast';
 
 const UserDocuments = () => {
@@ -57,7 +58,7 @@ const UserDocuments = () => {
       }
     } catch (error) {
       console.error('Error loading documents:', error);
-      toast.error(error.response?.data?.message || 'Failed to load documents');
+      handleContextError(error, 'Failed to load documents');
     } finally {
       setLoading(false);
     }
@@ -86,7 +87,7 @@ const UserDocuments = () => {
       
       toast.success('Document downloaded successfully');
     } catch (error) {
-      toast.error('Failed to download document');
+      handleContextError(error, 'Failed to download document');
     }
   };
 

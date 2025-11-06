@@ -3,6 +3,7 @@ import { tasksAPI, usersAPI } from '../../services/api';
 import { Plus, Trash2, Users, FileText, Download, Clock, Edit2, ChevronDown, ChevronUp, Archive } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
+import { handleContextError } from '../../utils/apiErrorHelper';
 import TaskCreateModal from '../modals/TaskCreateModal';
 import TaskDetailModal from '../modals/TaskDetailModal';
 import { formatDateToDDMMYYYY, formatDateTimeTo24Hour } from '../../utils/fileUtils';
@@ -48,7 +49,7 @@ const TasksManagement = () => {
       }
     } catch (error) {
       console.error('Error loading tasks:', error);
-      toast.error(error.response?.data?.message || 'Failed to load tasks');
+      handleContextError(error, 'Failed to load tasks');
     } finally {
       setLoading(false);
     }
@@ -67,7 +68,7 @@ const TasksManagement = () => {
       }
     } catch (error) {
       console.error('Error loading archived tasks:', error);
-      toast.error(error.response?.data?.message || 'Failed to load archived tasks');
+      handleContextError(error, 'Failed to load archived tasks');
     } finally {
       setLoading(false);
     }

@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotifications } from '../contexts/NotificationsContext';
+import { useTasks } from '../contexts/TasksContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { LogOut, FileText, Trash2, Bell, CheckSquare } from 'lucide-react';
 import LanguageSwitcher from './LanguageSwitcher';
@@ -11,6 +12,7 @@ const Logo = require('../assets/logo.PNG');
 const Header = () => {
   const { logout } = useAuth();
   const { unreadCount } = useNotifications();
+  const { activeTasksCount } = useTasks();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -75,6 +77,11 @@ const Header = () => {
               >
                 <CheckSquare className="h-4 w-4 mr-2" />
                 {t('navigation.tasks')}
+                {activeTasksCount > 0 && (
+                  <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
+                    {activeTasksCount > 99 ? '99+' : activeTasksCount}
+                  </span>
+                )}
               </button>
             </nav>
             

@@ -28,6 +28,14 @@ const Dashboard = () => {
     return '/documents'; // Fallback
   };
 
+  // Component to restrict access based on role
+  const AdminOnlyRoute = ({ children }) => {
+    if (admin?.role !== 'admin') {
+      return <Navigate to={getDefaultRoute()} replace />;
+    }
+    return children;
+  };
+
   return (
     <UsersProvider>
       <DeleteRequestsProvider>
@@ -49,13 +57,13 @@ const Dashboard = () => {
             <div className="p-6">
               <Routes>
                 <Route path="/" element={<Navigate to={getDefaultRoute()} replace />} />
-                {/* Admin and Director can access these routes - permissions are checked on backend */}
-                <Route path="/users" element={<UsersManagement />} />
-                <Route path="/users/:userId/documents" element={<UserDocuments />} />
-                <Route path="/groups" element={<GroupsManagement />} />
+                {/* Admin-only routes */}
+                <Route path="/users" element={<AdminOnlyRoute><UsersManagement /></AdminOnlyRoute>} />
+                <Route path="/users/:userId/documents" element={<AdminOnlyRoute><UserDocuments /></AdminOnlyRoute>} />
+                <Route path="/groups" element={<AdminOnlyRoute><GroupsManagement /></AdminOnlyRoute>} />
+                {/* Shared routes for both admin and director */}
                 <Route path="/tasks" element={<TasksManagement />} />
                 <Route path="/messages" element={<MessagesManagement />} />
-                {/* Shared routes for both admin and director */}
                 <Route path="/documents" element={<DocumentsManagement />} />
                 <Route path="/delete-requests" element={<DeleteRequestsManagement />} />
                 <Route path="/permissions" element={<PermissionsManagement />} />

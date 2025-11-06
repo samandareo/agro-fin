@@ -29,15 +29,35 @@ const Sidebar = () => {
       { name: 'Settings', href: '/settings', icon: Settings },
     ];
 
-    // Admin and Director can both see Users, Groups, Tasks, and Messages
-    // Backend permissions will control actual access
-    return [
+    // Only Admin (role = 'admin') can see Users and Groups
+    // Directors (role = 'director') cannot see Users and Groups sections
+    const adminOnlyNavigation = [
       { name: 'Users', href: '/users', icon: Users },
       { name: 'Groups', href: '/groups', icon: FolderTree },
+    ];
+
+    // Tasks and Messages are available to both Admin and Director
+    const commonNavigation = [
       { name: 'Tasks', href: '/tasks', icon: CheckSquare },
       { name: 'Messages', href: '/messages', icon: MessageSquare },
-      ...baseNavigation
     ];
+
+    // Build navigation based on role
+    if (admin?.role === 'admin') {
+      return [
+        ...adminOnlyNavigation,
+        ...commonNavigation,
+        ...baseNavigation
+      ];
+    } else if (admin?.role === 'director') {
+      // Directors don't see Users and Groups
+      return [
+        ...commonNavigation,
+        ...baseNavigation
+      ];
+    }
+
+    return baseNavigation;
   };
 
   const navigation = getNavigation();

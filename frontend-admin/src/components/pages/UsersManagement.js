@@ -229,7 +229,7 @@ const UsersManagement = () => {
                         </span>
                       </td>
                       <td className="table-cell text-sm text-gray-900">
-                        {user.role === 'director' ? <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800`}>Direktor</span> : (user.group_name || t('common.noData'))}
+                        {user.role === 'director' ? <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800`}>Rahbar</span> : (user.group_name || t('common.noData'))}
                       </td>
                       <td className="table-cell">
                         <div className="flex items-center space-x-2">

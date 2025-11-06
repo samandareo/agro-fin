@@ -2,7 +2,7 @@
     "header": {
         "adminDashboard": "Admin paneli",
         "adminRole": "Administrator",
-        "directorRole": "Direktor",
+        "directorRole": "Rahbar",
         "userRole": "Foydalanuvchi"
     },
     "navigation": {
@@ -83,8 +83,10 @@
         "userType": "Foydalanuvchi turi",
         "selectUserType": "Foydalanuvchi turini tanlang",
         "admin": "Admin",
-        "director": "Direktor",
-        "regularUser": "Oddiy foydalanuvchi"
+        "director": "Rahbar",
+        "regularUser": "Oddiy foydalanuvchi",
+        "selectedMultipleGroups": "Bir nechta guruhlar tanlandi",
+        "selectedGroups": "Tanlangan guruhlar"
     },
     "groups": {
         "title": "Guruhlar boshqaruvi",

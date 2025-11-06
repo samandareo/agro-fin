@@ -1,281 +1,167 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, ChevronRight, Folder, FolderOpen } from 'lucide-react';
 import { groupsAPI } from '../services/api';
-import toast from 'react-hot-toast';
+import { ChevronDown, ChevronRight, Check } from 'lucide-react';
 
-const GroupItem = ({ group, level, selectedGroupId, onSelect, disabled, expandedGroups, onToggleExpand, children }) => {
-  const isExpanded = expandedGroups.has(group.id);
-  const hasChildren = children && children.length > 0;
-  const isSelected = selectedGroupId === group.id;
-
-  const handleClick = () => {
-    if (hasChildren) {
-      onToggleExpand(group.id);
-    } else {
-      onSelect(group.id);
-    }
-  };
-
-  const handleSelect = () => {
-    onSelect(group.id);
-  };
-
-  return (
-    <div className="select-none">
-      <div
-        className={`flex items-center py-1 px-2 rounded cursor-pointer hover:bg-gray-100 ${
-          isSelected ? 'bg-blue-100 text-blue-800' : ''
-        } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-        style={{ paddingLeft: `${level * 20 + 8}px` }}
-        onClick={handleClick}
-      >
-        {hasChildren ? (
-          isExpanded ? (
-            <ChevronDown className="h-4 w-4 mr-1 text-gray-500" />
-          ) : (
-            <ChevronRight className="h-4 w-4 mr-1 text-gray-500" />
-          )
-        ) : (
-          <div className="w-5 h-4 mr-1" />
-        )}
-        
-        {hasChildren ? (
-          isExpanded ? (
-            <FolderOpen className="h-4 w-4 mr-2 text-blue-500" />
-          ) : (
-            <Folder className="h-4 w-4 mr-2 text-blue-500" />
-          )
-        ) : (
-          <Folder className="h-4 w-4 mr-2 text-gray-400" />
-        )}
-        
-        <span className="text-sm">{group.name}</span>
-        
-        {isSelected && (
-          <span className="ml-auto text-xs text-blue-600 font-medium">Selected</span>
-        )}
-      </div>
-      
-      {hasChildren && isExpanded && (
-        <div>
-          {children.map(child => (
-            <GroupItem
-              key={child.id}
-              group={child}
-              level={level + 1}
-              selectedGroupId={selectedGroupId}
-              onSelect={onSelect}
-              disabled={disabled}
-              expandedGroups={expandedGroups}
-              onToggleExpand={onToggleExpand}
-              children={child.children}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-const RecursiveGroupSelector = ({ value, onChange, disabled = false }) => {
-  const [allGroups, setAllGroups] = useState([]);
-  const [loading, setLoading] = useState(true);
+const RecursiveGroupSelector = ({ 
+  value, 
+  onChange, 
+  disabled = false, 
+  isMultiple = false,
+  selectedGroups = []
+}) => {
+  const [groups, setGroups] = useState([]);
   const [expandedGroups, setExpandedGroups] = useState(new Set());
-  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [allGroupsMap, setAllGroupsMap] = useState({});
 
-  const fetchAllGroups = async () => {
-    setLoading(true);
+  useEffect(() => {
+    loadGroups();
+  }, []);
+
+  const loadGroups = async () => {
     try {
-      const groups = await fetchGroupsRecursively(0);
-      setAllGroups(groups);
+      const response = await groupsAPI.getAll();
+      if (response.data.success) {
+        const allGroups = response.data.data;
+        
+        // Create a map of all groups by ID for quick lookup
+        const groupMap = {};
+        allGroups.forEach(group => {
+          groupMap[group.id] = { ...group, children: [] };
+        });
+        
+        setAllGroupsMap(groupMap);
+        
+        // Build tree structure
+        const rootGroups = [];
+        allGroups.forEach(group => {
+          if (!group.parent_id) {
+            // Root group
+            rootGroups.push(groupMap[group.id]);
+          } else if (groupMap[group.parent_id]) {
+            // Add to parent's children
+            groupMap[group.parent_id].children.push(groupMap[group.id]);
+          }
+        });
+        
+        // Sort children by name
+        const sortChildren = (groups) => {
+          groups.forEach(group => {
+            if (group.children && group.children.length > 0) {
+              group.children.sort((a, b) => a.name.localeCompare(b.name));
+              sortChildren(group.children);
+            }
+          });
+        };
+        
+        rootGroups.sort((a, b) => a.name.localeCompare(b.name));
+        sortChildren(rootGroups);
+        
+        setGroups(rootGroups);
+      }
     } catch (error) {
-      console.error('Error fetching groups:', error);
-      toast.error('Failed to load groups');
+      console.error('Failed to load groups:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchGroupsRecursively = async (parentId) => {
-    try {
-      const response = await groupsAPI.getSubgroups(parentId);
-      
-      if (!response.data.success) {
-        console.warn(`Failed to fetch groups for parent ${parentId}:`, response.data.message);
-        return [];
-      }
-
-      const groups = response.data.data || [];
-      
-      if (groups.length === 0) {
-        return [];
-      }
-
-      const groupsWithChildren = await Promise.all(
-        groups.map(async (group) => {
-          const children = await fetchGroupsRecursively(group.id);
-          return {
-            ...group,
-            children: children
-          };
-        })
-      );
-
-      return groupsWithChildren;
-    } catch (error) {
-      console.error(`Error fetching groups for parent ${parentId}:`, error);
-      return [];
-    }
-  };
-
-  useEffect(() => {
-    fetchAllGroups();
-  }, []);
-
-  useEffect(() => {
-    if (value && allGroups.length > 0) {
-      const findGroupById = (groups, targetId) => {
-        for (const group of groups) {
-          if (group.id === targetId) {
-            return group;
-          }
-          if (group.children) {
-            const found = findGroupById(group.children, targetId);
-            if (found) return found;
-          }
-        }
-        return null;
-      };
-
-      const selectedGroup = findGroupById(allGroups, value);
-      if (selectedGroup) {
-        setSelectedGroup(selectedGroup);
-        expandToShowGroup(selectedGroup.id);
-      }
-    }
-  }, [value, allGroups]);
-
-  const expandToShowGroup = (groupId) => {
-    const findPathToGroup = (groups, targetId, path = []) => {
-      for (const group of groups) {
-        const currentPath = [...path, group.id];
-        if (group.id === targetId) {
-          return currentPath;
-        }
-        if (group.children) {
-          const found = findPathToGroup(group.children, targetId, currentPath);
-          if (found) return found;
-        }
-      }
-      return null;
-    };
-
-    const path = findPathToGroup(allGroups, groupId);
-    if (path) {
-      const newExpandedGroups = new Set(expandedGroups);
-      path.slice(0, -1).forEach(id => newExpandedGroups.add(id));
-      setExpandedGroups(newExpandedGroups);
-    }
-  };
-
-  const handleGroupSelect = (groupId) => {
-    onChange(groupId);
-    
-    const findGroupById = (groups, targetId) => {
-      for (const group of groups) {
-        if (group.id === targetId) {
-          return group;
-        }
-        if (group.children) {
-          const found = findGroupById(group.children, targetId);
-          if (found) return found;
-        }
-      }
-      return null;
-    };
-
-    const group = findGroupById(allGroups, groupId);
-    setSelectedGroup(group);
-  };
-
-  const handleToggleExpand = (groupId) => {
-    const newExpandedGroups = new Set(expandedGroups);
-    if (newExpandedGroups.has(groupId)) {
-      newExpandedGroups.delete(groupId);
+  const toggleExpanded = (groupId) => {
+    const newExpanded = new Set(expandedGroups);
+    if (newExpanded.has(groupId)) {
+      newExpanded.delete(groupId);
     } else {
-      newExpandedGroups.add(groupId);
+      newExpanded.add(groupId);
     }
-    setExpandedGroups(newExpandedGroups);
+    setExpandedGroups(newExpanded);
   };
 
-  const getDisplayValue = () => {
-    if (!selectedGroup) return '';
-    
-    const getGroupPath = (group, groups, path = []) => {
-      for (const g of groups) {
-        const currentPath = [...path, g.name];
-        if (g.id === group.id) {
-          return currentPath.join(' → ');
-        }
-        if (g.children) {
-          const found = getGroupPath(group, g.children, currentPath);
-          if (found) return found;
-        }
-      }
-      return null;
-    };
+  const handleGroupClick = (groupId) => {
+    if (isMultiple) {
+      onChange(groupId); // Toggle on/off
+    } else {
+      onChange(groupId);
+    }
+  };
 
-    return getGroupPath(selectedGroup, allGroups) || selectedGroup.name;
+  const isGroupSelected = (groupId) => {
+    if (isMultiple) {
+      return Array.isArray(selectedGroups) && selectedGroups.includes(groupId);
+    }
+    return value === groupId;
+  };
+
+  const renderGroup = (group) => {
+    const isSelected = isGroupSelected(group.id);
+    const isExpanded = expandedGroups.has(group.id);
+    const hasChildren = group.children && group.children.length > 0;
+
+    return (
+      <div key={group.id} className="my-1">
+        <div className="flex items-center gap-2 py-2 px-2 rounded hover:bg-gray-100 transition">
+          {/* Expand/Collapse Button */}
+          {hasChildren ? (
+            <button
+              type="button"
+              onClick={() => toggleExpanded(group.id)}
+              className="p-0 hover:bg-gray-200 rounded flex-shrink-0"
+              disabled={disabled}
+            >
+              {isExpanded ? (
+                <ChevronDown className="h-4 w-4 text-gray-600" />
+              ) : (
+                <ChevronRight className="h-4 w-4 text-gray-600" />
+              )}
+            </button>
+          ) : (
+            <div className="w-4 flex-shrink-0" />
+          )}
+
+          {/* Checkbox or Radio */}
+          <div
+            onClick={() => !disabled && handleGroupClick(group.id)}
+            className={`flex items-center cursor-pointer flex-1 gap-2 ${
+              disabled ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+          >
+            <div
+              className={`h-5 w-5 rounded border-2 flex items-center justify-center transition flex-shrink-0 ${
+                isSelected
+                  ? 'bg-brand-600 border-brand-600'
+                  : 'border-gray-300 bg-white'
+              }`}
+            >
+              {isSelected && (
+                <Check className="h-3 w-3 text-white" />
+              )}
+            </div>
+            <span className={`text-sm font-medium truncate ${isSelected ? 'text-brand-600' : 'text-gray-700'}`}>
+              {group.name}
+            </span>
+          </div>
+        </div>
+
+        {/* Sub-groups */}
+        {hasChildren && isExpanded && (
+          <div className="ml-4 pl-2 border-l border-gray-200">
+            {group.children.map(subGroup => renderGroup(subGroup))}
+          </div>
+        )}
+      </div>
+    );
   };
 
   if (loading) {
-    return (
-      <div className="border border-gray-300 rounded-md p-4 bg-gray-50">
-        <p className="text-sm text-gray-500">Loading groups...</p>
-      </div>
-    );
+    return <div className="text-sm text-gray-500">Loading groups...</div>;
   }
 
-  if (allGroups.length === 0) {
-    return (
-      <div className="border border-gray-300 rounded-md p-4 bg-gray-50">
-        <p className="text-sm text-gray-500">No groups available</p>
-      </div>
-    );
+  if (groups.length === 0) {
+    return <div className="text-sm text-gray-500">No groups available</div>;
   }
 
   return (
-    <div className="space-y-3">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Group *
-        </label>
-        {/* Group Tree */}
-        <div className="border border-gray-300 rounded-md p-2 bg-white max-h-48 overflow-y-auto">
-        {allGroups.map(group => (
-          <GroupItem
-            key={group.id}
-            group={group}
-            level={0}
-            selectedGroupId={value}
-            onSelect={handleGroupSelect}
-            disabled={disabled}
-            expandedGroups={expandedGroups}
-            onToggleExpand={handleToggleExpand}
-            children={group.children}
-          />
-        ))}
-        </div>
-      </div>
-
-      {/* Selected Group Display */}
-      {value && selectedGroup && (
-        <div className="p-2 bg-blue-50 border border-blue-200 rounded-md">
-          <p className="text-sm text-blue-800">
-            <strong>Selected:</strong> {getDisplayValue()}
-          </p>
-        </div>
-      )}
+    <div className="space-y-1">
+      {groups.map(group => renderGroup(group))}
     </div>
   );
 };

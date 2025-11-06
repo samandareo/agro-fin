@@ -194,16 +194,15 @@ exports.getUser = async (req, res, next) => {
 
 exports.createUser = async (req, res, next) => {
     try {
-        const { name, telegramId, password, groupId, roleId } = req.body;
+        const { name, telegramId, password, groupId, groupIds, roleId } = req.body;
         let status = req.body.status;
 
         if (!name || !telegramId || !password) {
-            if (req.user.role !== 'admin' && req.user.role !== 'director') {
-                if (!groupId) {
-                    return ApiResponse.badRequest("All fields are required").send(res);
-                }
-            }
-            return ApiResponse.badRequest("All fields are required").send(res);
+            return ApiResponse.badRequest("All required fields must be filled").send(res);
+        }
+
+        if (!roleId) {
+            return ApiResponse.badRequest("Role is required").send(res);
         }
 
         const existingUser = await User.findByTelegramId(telegramId);
@@ -217,17 +216,49 @@ exports.createUser = async (req, res, next) => {
             return ApiResponse.error("Failed to create user").send(res);
         }
     
-        if (user.role === 'user') {
+        // Check if user is director (roleId === 3)
+        const isDirector = Number(roleId) === 3;
+        
+        if (isDirector) {
+            // Directors: assign multiple groups
+            if (!groupIds || !Array.isArray(groupIds) || groupIds.length === 0) {
+                // Cleanup: delete the created user
+                await User.findByIdAndDelete(user.id);
+                return ApiResponse.badRequest("Director must have at least one group assigned").send(res);
+            }
+            const assignedGroups = await User.assignMultipleGroups(user.id, groupIds);
+            if (!assignedGroups || assignedGroups.length === 0) {
+                await User.findByIdAndDelete(user.id);
+                return ApiResponse.error("Failed to assign groups to director").send(res);
+            }
+        } else {
+            // Regular users: assign single group
+            if (!groupId) {
+                await User.findByIdAndDelete(user.id);
+                return ApiResponse.badRequest("User must be assigned to a group").send(res);
+            }
             const userGroup = await User.assignToGroup(user.id, groupId);
             if (!userGroup) {
+                await User.findByIdAndDelete(user.id);
                 return ApiResponse.error("Failed to assign user to group").send(res);
             }
         }
 
+        // Fetch updated user with groups
+        const userGroups = await User.getUserGroups(user.id);
+        const updatedUser = await User.findOne(user.id);
+
         const accessToken = jwt.generateAccessToken({ id: user.id, telegramId: user.telegramId, role: user.role });
         const refreshToken = jwt.generateRefreshToken({ id: user.id, telegramId: user.telegramId, role: user.role });
 
-        return ApiResponse.success({ accessToken:accessToken, refreshToken:refreshToken }, "User created successfully").send(res);
+        return ApiResponse.success({ 
+            accessToken, 
+            refreshToken,
+            user: {
+                ...updatedUser,
+                groups: userGroups
+            }
+        }, "User created successfully").send(res);
 
     } catch (error) {
         return ApiResponse.error(error.message).send(res);
@@ -237,31 +268,57 @@ exports.createUser = async (req, res, next) => {
 exports.updateUser = async (req, res, next) => {
     try {
         const { userId } = req.params;
-        const { name, telegramId, password, groupId, roleId } = req.body;
-
+        const { name, telegramId, password, groupId, groupIds, roleId } = req.body;
         let status = req.body.status;
+
+        console.log(`[DEBUG] updateUser called with userId: ${userId}`);
+        console.log(`[DEBUG] Request body:`, req.body);
 
         if (!userId) {
             return ApiResponse.badRequest("User ID is required").send(res);
         }
 
         if (!name || !telegramId) {
-            if (req.user.role !== 'admin' && req.user.role !== 'director') {
-                if (!groupId) {
-                    return ApiResponse.badRequest("All fields are required").send(res);
-                }
-            }
-            return ApiResponse.badRequest("All fields are required").send(res);
+            return ApiResponse.badRequest("Name and telegram ID are required").send(res);
         }
 
-        const updatedUser = await User.findByIdAndUpdate(userId, { name, telegramId, password, status, groupId, roleId: Number(roleId) });
-
-        if (!updatedUser) {
+        const user = await User.findById(userId);
+        if (!user) {
             return ApiResponse.badRequest("User not found").send(res);
         }
 
-        return ApiResponse.success(updatedUser, "User updated successfully").send(res);
+        const isDirector = Number(roleId || user.role_id) === 3;
+        console.log(`[DEBUG] isDirector: ${isDirector}, groupIds: ${groupIds}, groupId: ${groupId}`);
+
+        // Update user basic info - PASS groupId and groupIds to the model
+        const updatedUser = await User.findByIdAndUpdate(userId, { 
+            name, 
+            telegramId, 
+            password, 
+            status, 
+            roleId: Number(roleId || user.role_id),
+            groupId,
+            groupIds
+        });
+
+        if (!updatedUser) {
+            console.error(`[ERROR] updatedUser is null or undefined`);
+            return ApiResponse.badRequest("Failed to update user").send(res);
+        }
+
+        console.log(`[DEBUG] User updated successfully, fetching groups`);
+        const userGroups = await User.getUserGroups(userId);
+        console.log(`[DEBUG] User groups fetched:`, userGroups);
+
+        return ApiResponse.success({
+            ...updatedUser,
+            groups: userGroups
+        }, "User updated successfully").send(res);
+
     } catch (error) {
+        console.error(`[ERROR] updateUser error:`, error.message);
+        console.error(`[ERROR] updateUser full error:`, error);
+        console.error(`[ERROR] Stack trace:`, error.stack);
         return ApiResponse.error(error.message).send(res);
     }
 }

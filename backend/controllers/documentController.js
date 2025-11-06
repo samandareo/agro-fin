@@ -330,26 +330,18 @@ exports.getFilteredDocuments = async (req, res, next) => {
         filters.offset = (pageNum - 1) * limitNum;
         filters.limit = limitNum;
 
-        // If caller is a director (user with director role) use director-scoped queries
-        const isDirector = req.user && (req.user.role_id === 3 || String(req.user.role).toLowerCase() === 'director');
+        const isDirector = req.admin && (req.admin.role_id === 3 || String(req.admin.role).toLowerCase() === 'director');
 
         let documentsPromise;
         let countPromise;
 
         if (isDirector) {
-            // userId must exist for director
-            if (!userId) {
-                return ApiResponse.unauthorized("User context required for director access").send(res);
-            }
-            documentsPromise = Document.directorGetUserDocuments(userId, filters);
-            countPromise = Document.countDirectorDocumentsWithFilters(userId, filters);
+            documentsPromise = Document.directorGetUserDocuments(adminId, filters);
+            countPromise = Document.countDirectorDocumentsWithFilters(adminId, filters);
         } else if (adminId) {
-            // admin: use admin/general filters
             documentsPromise = Document.findWithFilters(filters);
             countPromise = Document.countWithFilters(filters);
         } else {
-            // fallback: if a normal user hits this endpoint, deny or route to user filters
-            // Prefer explicit user endpoint; deny here for safety
             return ApiResponse.forbidden("Access denied").send(res);
         }
 

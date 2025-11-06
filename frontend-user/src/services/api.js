@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getErrorMessage, logErrorForDebug, isSilentError } from '../utils/errorHandler';
 
 const API_BASE_URL = 'https://agro-fin.onrender.com/api/v1';
 // const API_BASE_URL = 'http://localhost:5000/api/v1';
@@ -61,7 +62,26 @@ api.interceptors.response.use(
       }
     }
     
-    return Promise.reject(error);
+    // Log error for debugging in development
+    logErrorForDebug(error, 'API Request');
+    
+    // Convert error to user-friendly message (or SilentError for 403)
+    const userMessage = getErrorMessage(error);
+    
+    // Check if this is a silent error (403 Forbidden) - don't show to user
+    if (isSilentError(userMessage)) {
+      logErrorForDebug(error, 'SILENT_ERROR_403');
+      // Return a silent error that won't trigger error toasts
+      return Promise.reject(userMessage);
+    }
+    
+    // Create a new error object with user-friendly message
+    const customError = new Error(userMessage);
+    customError.response = error.response;
+    customError.request = error.request;
+    customError.originalError = error;
+    
+    return Promise.reject(customError);
   }
 );
 

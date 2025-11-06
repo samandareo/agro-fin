@@ -13,6 +13,7 @@ import {
 import { deleteRequestsAPI } from '../../services/api';
 import { formatDateToDDMMYYYY } from '../../utils/fileUtils';
 import { useDeleteRequests } from '../../contexts/DeleteRequestsContext';
+import { handleContextError } from '../../utils/apiErrorHelper';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 
@@ -59,7 +60,7 @@ const DeleteRequestsManagement = () => {
       }
     } catch (error) {
       console.error('Error loading delete requests:', error);
-      toast.error('Failed to load delete requests');
+      handleContextError(error, 'Failed to load delete requests');
     } finally {
       setLoading(false);
     }
@@ -86,11 +87,11 @@ const DeleteRequestsManagement = () => {
         updatePendingCount(-1);
         loadRequests(pagination.currentPage, statusFilter);
       } else {
-        toast.error(response.data.message || t('common.error'));
+        handleContextError(new Error(response.data.message), t('common.error'));
       }
     } catch (error) {
       console.error('Error approving request:', error);
-      toast.error(t('common.error'));
+      handleContextError(error, t('common.error'));
     }
   };
 
@@ -102,11 +103,11 @@ const DeleteRequestsManagement = () => {
         updatePendingCount(-1);
         loadRequests(pagination.currentPage, statusFilter);
       } else {
-        toast.error(response.data.message || t('common.error'));
+        handleContextError(new Error(response.data.message), t('common.error'));
       }
     } catch (error) {
       console.error('Error rejecting request:', error);
-      toast.error(t('common.error'));
+      handleContextError(error, t('common.error'));
     }
   };
 

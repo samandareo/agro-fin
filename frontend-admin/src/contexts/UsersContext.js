@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { usersAPI } from '../services/api';
 import toast from 'react-hot-toast';
+import { handleContextError } from '../utils/apiErrorHelper';
 
 const UsersContext = createContext();
 
@@ -69,7 +70,7 @@ export const UsersProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Error loading users:', error);
-      toast.error(error.response?.data?.message || 'Failed to load users');
+      handleContextError(error, 'Failed to load users');
     } finally {
       setLoading(false);
     }
@@ -101,7 +102,7 @@ export const UsersProvider = ({ children }) => {
         toast.error(response.data.message || 'Failed to search users');
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to search users');
+      handleContextError(error, 'Failed to search users');
     } finally {
       setLoading(false);
     }
@@ -120,8 +121,7 @@ export const UsersProvider = ({ children }) => {
         return { success: false, message: response.data.message };
       }
     } catch (error) {
-      const message = error.response?.data?.message || 'Failed to create user';
-      toast.error(message);
+      const message = handleContextError(error, 'Failed to create user');
       return { success: false, message };
     }
   };
@@ -139,8 +139,7 @@ export const UsersProvider = ({ children }) => {
         return { success: false, message: response.data.message };
       }
     } catch (error) {
-      const message = error.response?.data?.message || 'Failed to update user';
-      toast.error(message);
+      const message = handleContextError(error, 'Failed to update user');
       return { success: false, message };
     }
   };
@@ -158,8 +157,7 @@ export const UsersProvider = ({ children }) => {
         return { success: false, message: response.data.message };
       }
     } catch (error) {
-      const message = error.response?.data?.message || 'Failed to delete user';
-      toast.error(message);
+      const message = handleContextError(error, 'Failed to delete user');
       return { success: false, message };
     }
   };

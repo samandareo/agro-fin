@@ -19,6 +19,7 @@ export const TasksProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [taskDetails, setTaskDetails] = useState(null);
+  const [activeTasksCount, setActiveTasksCount] = useState(0);
 
   // Separate pagination states for active and archived tasks
   const [activePagination, setActivePagination] = useState({
@@ -61,6 +62,8 @@ export const TasksProvider = ({ children }) => {
       });
       setTasks(response.data.data.tasks || []);
       setActivePagination(response.data.data.pagination || activePagination);
+      // Update the active tasks count
+      setActiveTasksCount(response.data.data.pagination?.totalCount || 0);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to load tasks');
       console.error('Error loading tasks:', error);
@@ -102,9 +105,9 @@ export const TasksProvider = ({ children }) => {
       const response = await api.put(`/tasks/user/${taskId}/status`, { status });
 
       // Determine the appropriate success message
-      let successMessage = 'Task status updated successfully';
+      let successMessage = 'Vazifa holati muvaffaqiyatli yangilandi';
       if (status === 'completed') {
-        successMessage = 'Task marked as completed and archived!';
+        successMessage = 'Vazifa bajarildi va arxivlandi!';
       }
       toast.success(successMessage);
 
@@ -177,7 +180,8 @@ export const TasksProvider = ({ children }) => {
     getTaskDetail,
     updateTaskStatus,
     downloadFile,
-    pagination
+    pagination,
+    activeTasksCount
   };
 
   return (

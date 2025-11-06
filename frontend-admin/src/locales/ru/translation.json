@@ -84,7 +84,9 @@
         "selectUserType": "Выберите тип пользователя",
         "admin": "Админ",
         "director": "Директор",
-        "regularUser": "Обычный пользователь"
+        "regularUser": "Обычный пользователь",
+        "selectedMultipleGroups": "Выбрано несколько групп",
+        "selectedGroups": "Выбранные группы"
     },
     "groups": {
         "title": "Управление группами",

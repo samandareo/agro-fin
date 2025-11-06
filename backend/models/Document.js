@@ -460,3 +460,156 @@ exports.getUserFilterOptions = async (userId) => {
     };
 }
 
+exports.directorGetUserDocuments = async (userId, filters) => {
+    try {
+        filters = filters || {};
+
+        let query = `
+        WITH RECURSIVE director_groups AS (
+            -- groups directly assigned to this director
+            SELECT g.*
+            FROM groups g
+            JOIN user_groups ug ON ug.group_id = g.id
+            JOIN users u ON u.id = ug.user_id
+            WHERE u.role_id = 3 AND u.id = $1
+
+            UNION ALL
+
+            -- recursively get all child groups
+            SELECT g2.*
+            FROM groups g2
+            JOIN director_groups dg ON g2.parent_id = dg.id
+        )
+
+        SELECT d.*
+        FROM documents d
+        JOIN director_groups dg ON dg.id = d.group_id
+        WHERE 1=1
+    `;
+
+        const params = [userId];
+        let paramIndex = 2;
+
+        if (filters.year) {
+            query += ` AND EXTRACT(YEAR FROM d.upload_at) = $${paramIndex}`;
+            params.push(filters.year);
+            paramIndex++;
+        }
+
+        if (filters.month) {
+            query += ` AND EXTRACT(MONTH FROM d.upload_at) = $${paramIndex}`;
+            params.push(filters.month);
+            paramIndex++;
+        }
+
+        if (filters.date) {
+            query += ` AND DATE(d.upload_at) = $${paramIndex}`;
+            params.push(filters.date);
+            paramIndex++;
+        }
+
+        if (filters.startDate && filters.endDate) {
+            query += ` AND DATE(d.upload_at) BETWEEN $${paramIndex} AND $${paramIndex + 1}`;
+            params.push(filters.startDate, filters.endDate);
+            paramIndex += 2;
+        }
+
+        if (filters.groupId) {
+            query += ` AND d.group_id = $${paramIndex}`;
+            params.push(filters.groupId);
+            paramIndex++;
+        }
+
+        if (filters.title) {
+            query += ` AND d.title ILIKE $${paramIndex}`;
+            params.push(`%${filters.title}%`);
+            paramIndex++;
+        }
+
+        query += ` ORDER BY d.upload_at DESC`;
+
+        if (filters.limit && filters.offset !== undefined) {
+            query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+            params.push(filters.limit, filters.offset);
+        }
+
+        const { rows } = await pool.query(query, params);
+        return rows || [];
+    } catch (error) {
+        throw error;
+    }
+}
+
+// New: count for director-scoped documents
+exports.countDirectorDocumentsWithFilters = async (userId, filters) => {
+    try {
+        filters = filters || {};
+
+        let query = `
+        WITH RECURSIVE director_groups AS (
+            -- groups directly assigned to this director
+            SELECT g.*
+            FROM groups g
+            JOIN user_groups ug ON ug.group_id = g.id
+            JOIN users u ON u.id = ug.user_id
+            WHERE u.role_id = 3 AND u.id = $1
+
+            UNION ALL
+
+            -- recursively get all child groups
+            SELECT g2.*
+            FROM groups g2
+            JOIN director_groups dg ON g2.parent_id = dg.id
+        )
+
+        SELECT COUNT(*) as total
+        FROM documents d
+        JOIN director_groups dg ON dg.id = d.group_id
+        WHERE 1=1
+        `;
+
+        const params = [userId];
+        let paramIndex = 2;
+
+        if (filters.year) {
+            query += ` AND EXTRACT(YEAR FROM d.upload_at) = $${paramIndex}`;
+            params.push(filters.year);
+            paramIndex++;
+        }
+
+        if (filters.month) {
+            query += ` AND EXTRACT(MONTH FROM d.upload_at) = $${paramIndex}`;
+            params.push(filters.month);
+            paramIndex++;
+        }
+
+        if (filters.date) {
+            query += ` AND DATE(d.upload_at) = $${paramIndex}`;
+            params.push(filters.date);
+            paramIndex++;
+        }
+
+        if (filters.startDate && filters.endDate) {
+            query += ` AND DATE(d.upload_at) BETWEEN $${paramIndex} AND $${paramIndex + 1}`;
+            params.push(filters.startDate, filters.endDate);
+            paramIndex += 2;
+        }
+
+        if (filters.groupId) {
+            query += ` AND d.group_id = $${paramIndex}`;
+            params.push(filters.groupId);
+            paramIndex++;
+        }
+
+        if (filters.title) {
+            query += ` AND d.title ILIKE $${paramIndex}`;
+            params.push(`%${filters.title}%`);
+            paramIndex++;
+        }
+
+        const { rows } = await pool.query(query, params);
+        return parseInt(rows[0]?.total) || 0;
+    } catch (error) {
+        throw error;
+    }
+}

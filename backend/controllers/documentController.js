@@ -271,39 +271,36 @@ exports.getFilteredDocuments = async (req, res, next) => {
             startDate,
             endDate,
             groupId,
-            uploaderId,
-            uploaderName,
             title,
             page = 1,
             limit = 10
         } = req.query;
 
+        // Determine caller: admin or user
+        const adminId = req.admin?.id;
+        const userId = req.user?.id;
+
+        // Validation
         if (year && !isValidYear(year)) {
             return ApiResponse.badRequest("Invalid year format").send(res);
         }
-
         if (month && !isValidMonth(month)) {
             return ApiResponse.badRequest("Invalid month format (1-12)").send(res);
         }
-
         if (date && !isValidDate(date)) {
             return ApiResponse.badRequest("Invalid date format (YYYY-MM-DD)").send(res);
         }
-
         if (startDate && !isValidDate(startDate)) {
             return ApiResponse.badRequest("Invalid start date format (YYYY-MM-DD)").send(res);
         }
-
         if (endDate && !isValidDate(endDate)) {
             return ApiResponse.badRequest("Invalid end date format (YYYY-MM-DD)").send(res);
         }
-
         if (startDate && endDate && !isValidDateRange(startDate, endDate)) {
             return ApiResponse.badRequest("Invalid date range: start date must be before end date").send(res);
         }
 
         const filters = {};
-
         if (year) filters.year = parseInt(year);
         if (month) filters.month = parseInt(month);
         if (date) filters.date = date;
@@ -318,24 +315,14 @@ exports.getFilteredDocuments = async (req, res, next) => {
             filters.groupId = groupIdNum;
         }
 
-        if (uploaderId) {
-            const uploaderIdNum = parseInt(uploaderId);
-            if (isNaN(uploaderIdNum)) {
-                return ApiResponse.badRequest("Invalid uploader ID").send(res);
-            }
-            filters.uploaderId = uploaderIdNum;
-        }
-        if (uploaderName) filters.uploaderName = uploaderName;
-
         if (title) filters.title = title;
 
         const pageNum = parseInt(page);
         const limitNum = parseInt(limit);
-        
+
         if (isNaN(pageNum) || pageNum < 1) {
             return ApiResponse.badRequest("Invalid page number").send(res);
         }
-        
         if (isNaN(limitNum) || limitNum < 1 || limitNum > 100) {
             return ApiResponse.badRequest("Invalid limit (1-100)").send(res);
         }
@@ -343,10 +330,30 @@ exports.getFilteredDocuments = async (req, res, next) => {
         filters.offset = (pageNum - 1) * limitNum;
         filters.limit = limitNum;
 
-        const [documents, totalCount] = await Promise.all([
-            Document.findWithFilters(filters),
-            Document.countWithFilters(filters)
-        ]);
+        // If caller is a director (user with director role) use director-scoped queries
+        const isDirector = req.user && (req.user.role_id === 3 || String(req.user.role).toLowerCase() === 'director');
+
+        let documentsPromise;
+        let countPromise;
+
+        if (isDirector) {
+            // userId must exist for director
+            if (!userId) {
+                return ApiResponse.unauthorized("User context required for director access").send(res);
+            }
+            documentsPromise = Document.directorGetUserDocuments(userId, filters);
+            countPromise = Document.countDirectorDocumentsWithFilters(userId, filters);
+        } else if (adminId) {
+            // admin: use admin/general filters
+            documentsPromise = Document.findWithFilters(filters);
+            countPromise = Document.countWithFilters(filters);
+        } else {
+            // fallback: if a normal user hits this endpoint, deny or route to user filters
+            // Prefer explicit user endpoint; deny here for safety
+            return ApiResponse.forbidden("Access denied").send(res);
+        }
+
+        const [documents, totalCount] = await Promise.all([documentsPromise, countPromise]);
 
         const totalPages = Math.ceil(totalCount / limitNum);
 
@@ -360,7 +367,7 @@ exports.getFilteredDocuments = async (req, res, next) => {
                 hasNext: pageNum < totalPages,
                 hasPrev: pageNum > 1
             }
-        }, "Filtered documents fetched successfully").send(res);
+        }, "Filtered documents retrieved").send(res);
 
     } catch (error) {
         return ApiResponse.error(error.message).send(res);
@@ -492,9 +499,23 @@ exports.getUserFilteredDocuments = async (req, res, next) => {
         filters.offset = (pageNum - 1) * limitNum;
         filters.limit = limitNum;
 
+        // Decide which model functions to call based on user role (director => use director-specific queries)
+        const isDirector = req.user?.role_id === 3 || String(req.user?.role).toLowerCase() === 'director';
+
+        let documentsPromise;
+        let countPromise;
+
+        if (isDirector) {
+            documentsPromise = Document.directorGetUserDocuments(userId, filters);
+            countPromise = Document.countDirectorDocumentsWithFilters(userId, filters);
+        } else {
+            documentsPromise = Document.findUserDocumentsWithFilters(userId, filters);
+            countPromise = Document.countUserDocumentsWithFilters(userId, filters);
+        }
+
         const [documents, totalCount] = await Promise.all([
-            Document.findUserDocumentsWithFilters(userId, filters),
-            Document.countUserDocumentsWithFilters(userId, filters)
+            documentsPromise,
+            countPromise
         ]);
 
         const totalPages = Math.ceil(totalCount / limitNum);

@@ -116,16 +116,16 @@ exports.createDocument = async (req, res, next) => {
         }
 
         const uploaderId = req.user.id;
-        const userGroup = await User.findUserGroup(uploaderId);
-        if (!userGroup) {
+        const userGroups = await User.getUserGroups(uploaderId);
+        if (!userGroups || userGroups.length === 0) {
             return ApiResponse.badRequest("User group not found").send(res);
         }
 
         const uploaderName = req.user.name;
         const uploaderTelegramId = req.user.telegram_id;
         const filePath = req.file.filename;
-        const groupName = userGroup.name;
-        const groupId = userGroup.id;
+        const groupName = userGroups[0].name;
+        const groupId = userGroups[0].id;
 
         const document = await Document.create({ 
             title, 

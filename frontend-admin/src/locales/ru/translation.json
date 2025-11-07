@@ -86,7 +86,8 @@
         "director": "Директор",
         "regularUser": "Обычный пользователь",
         "selectedMultipleGroups": "Выбрано несколько групп",
-        "selectedGroups": "Выбранные группы"
+        "selectedGroups": "Выбранные группы",
+        "selectGroups": "Выберите группы"
     },
     "groups": {
         "title": "Управление группами",

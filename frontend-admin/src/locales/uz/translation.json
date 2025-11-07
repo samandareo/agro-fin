@@ -86,7 +86,8 @@
         "director": "Rahbar",
         "regularUser": "Oddiy foydalanuvchi",
         "selectedMultipleGroups": "Bir nechta guruhlar tanlandi",
-        "selectedGroups": "Tanlangan guruhlar"
+        "selectedGroups": "Tanlangan guruhlar",
+        "selectGroups": "Guruhlarni tanlang"
     },
     "groups": {
         "title": "Guruhlar boshqaruvi",

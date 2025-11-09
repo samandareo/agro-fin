@@ -185,14 +185,14 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
               {/* Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('users.userName')} *
+                  {t('users.name')} *
                 </label>
                 <input
                   type="text"
                   name="name"
                   required
                   className="input-field"
-                  placeholder={t('users.userNamePlaceholder')}
+                  placeholder={t('users.namePlaceholder')}
                   value={formData.name}
                   onChange={handleChange}
                   disabled={isSubmitting}

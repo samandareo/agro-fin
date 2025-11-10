@@ -52,7 +52,9 @@ export const parseError = (error, context = '') => {
   };
 };
 
-export default {
+const apiErrorHelper = {
   handleContextError,
   parseError,
 };
+
+export default apiErrorHelper;

@@ -169,7 +169,7 @@ export const isNetworkError = (error) => {
   return error.request && !error.response;
 };
 
-export default {
+const errorHandler = {
   getErrorMessage,
   logErrorForDebug,
   isSilentError,
@@ -180,3 +180,5 @@ export default {
   isNetworkError,
   SilentError,
 };
+
+export default errorHandler;

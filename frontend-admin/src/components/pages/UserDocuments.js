@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Download, FileText, Calendar, User, Folder } from 'lucide-react';
-import { documentsAPI } from '../../services/api';
+import { ArrowLeft, Download, FileText, User, Folder } from 'lucide-react';
+import { documentsAPI, usersAPI } from '../../services/api';
 import { formatDateToDDMMYYYY } from '../../utils/fileUtils';
 import { handleContextError } from '../../utils/apiErrorHelper';
 import toast from 'react-hot-toast';
@@ -22,7 +22,7 @@ const UserDocuments = () => {
   });
 
 
-  const loadUserDocuments = async (page = 1) => {
+  const loadUserDocuments = useCallback(async (page = 1) => {
     setLoading(true);
     try {
       const response = await documentsAPI.getByUploaderId(userId, { 
@@ -62,29 +62,36 @@ const UserDocuments = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, pagination.limit]);
 
-  const loadUserInfo = async () => {
+  const loadUserInfo = useCallback(async () => {
     try {
-      const response = await documentsAPI.getById(userId);
+      const response = await usersAPI.getById(userId);
+      if (response?.data?.success) {
+        setUser(response.data.data);
+      } else {
+        // If API returned an error message
+        handleContextError(new Error(response?.data?.message || 'Failed to load user info'));
+      }
     } catch (error) {
       console.error('Failed to load user info:', error);
+      handleContextError(error, 'Failed to load user info');
     }
-  };
+  }, [userId]);
 
-  const handleDownload = async (document) => {
+  const handleDownload = async (doc) => {
     try {
-      const response = await documentsAPI.download(document.id);
-      
+      const response = await documentsAPI.download(doc.id);
+
       const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
+      const link = window.document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `${document.title}.${document.file_path.split('.').pop()}`);
-      document.body.appendChild(link);
+      link.setAttribute('download', `${doc.title}.${doc.file_path.split('.').pop()}`);
+      window.document.body.appendChild(link);
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-      
+
       toast.success('Document downloaded successfully');
     } catch (error) {
       handleContextError(error, 'Failed to download document');
@@ -129,7 +136,8 @@ const UserDocuments = () => {
       loadUserDocuments();
       loadUserInfo();
     }
-  }, [userId]);
+    // loadUserDocuments and loadUserInfo are wrapped in useCallback so they are safe to include
+  }, [userId, loadUserDocuments, loadUserInfo]);
 
   return (
     <div className="space-y-6">
@@ -198,10 +206,10 @@ const UserDocuments = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {documents.map((document) => {
-                  const dateInfo = formatDate(document.upload_at);
+                {documents.map((doc) => {
+                  const dateInfo = formatDate(doc.upload_at);
                   return (
-                    <tr key={document.id} className="hover:bg-gray-50">
+                    <tr key={doc.id} className="hover:bg-gray-50">
                       <td className="table-cell">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-8 w-8 bg-brand-100 rounded-lg flex items-center justify-center mr-3">
@@ -211,10 +219,10 @@ const UserDocuments = () => {
                           </div>
                           <div>
                             <div className="text-sm font-medium text-gray-900">
-                              {document.title}
+                              {doc.title}
                             </div>
                             <div className="text-sm text-gray-500">
-                              {document.file_path.split('.').pop()?.toUpperCase()}
+                              {doc.file_path.split('.').pop()?.toUpperCase()}
                             </div>
                           </div>
                         </div>
@@ -222,7 +230,7 @@ const UserDocuments = () => {
                       <td className="table-cell">
                         <div className="flex items-center text-sm text-gray-900">
                           <Folder className="h-4 w-4 mr-2 text-gray-400" />
-                          {document.group_name || 'No Group'}
+                          {doc.group_name || 'No Group'}
                         </div>
                       </td>
                       <td className="table-cell text-sm text-gray-900" title={dateInfo.formatted}>
@@ -236,7 +244,7 @@ const UserDocuments = () => {
                       </td>
                       <td className="table-cell">
                         <button
-                          onClick={() => handleDownload(document)}
+                          onClick={() => handleDownload(doc)}
                           className="text-gray-500 hover:text-brand-600 transition-colors p-2 rounded-lg hover:bg-brand-50"
                           title="Download"
                         >

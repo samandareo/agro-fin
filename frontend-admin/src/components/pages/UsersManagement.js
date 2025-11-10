@@ -13,19 +13,17 @@ const UsersManagement = () => {
     users, 
     loading, 
     pagination, 
-    filters, 
     searchUsers, 
     createUser, 
     updateUser, 
     deleteUser, 
     changePage, 
-    changePageSize, 
     clearFilters 
   } = useUsers();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [showFilters, setShowFilters] = useState(false);
+  // showFilters state was declared previously but not used; remove to satisfy lint
   const [userModal, setUserModal] = useState({ isOpen: false, user: null });
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
@@ -52,7 +50,7 @@ const UsersManagement = () => {
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [searchTerm, statusFilter]);
+  }, [searchTerm, statusFilter, searchUsers]);
 
   const handleSearch = (e) => {
     e.preventDefault();

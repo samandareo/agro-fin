@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { tasksAPI, usersAPI } from '../../services/api';
 import { Plus, Trash2, Users, FileText, Download, Clock, Edit2, ChevronDown, ChevronUp, Archive } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -36,14 +36,26 @@ const TasksManagement = () => {
 
   const currentPagination = activeTab === 'active' ? activePagination : archivedPagination;
 
-  const loadTasks = async (page = 1) => {
+  // Refs to hold the latest pagination limits so callbacks don't need to depend on pagination state
+  const activeLimitRef = useRef(activePagination.limit || 20);
+  const archivedLimitRef = useRef(archivedPagination.limit || 20);
+
+  useEffect(() => {
+    activeLimitRef.current = activePagination.limit || 20;
+  }, [activePagination.limit]);
+
+  useEffect(() => {
+    archivedLimitRef.current = archivedPagination.limit || 20;
+  }, [archivedPagination.limit]);
+
+  const loadTasks = useCallback(async (page = 1) => {
     setLoading(true);
     try {
-      const limit = activePagination.limit || 20;
+      const limit = activeLimitRef.current || 20;
       const response = await tasksAPI.getActiveAdmin({ page, limit });
       if (response.data.success) {
         setTasks(response.data.data.tasks || []);
-        setActivePagination(response.data.data.pagination || activePagination);
+        setActivePagination(prev => response.data.data.pagination || prev);
       } else {
         toast.error(response.data.message || 'Failed to load tasks');
       }
@@ -53,16 +65,16 @@ const TasksManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const loadArchivedTasks = async (page = 1) => {
+  const loadArchivedTasks = useCallback(async (page = 1) => {
     setLoading(true);
     try {
-      const limit = archivedPagination.limit || 20;
+      const limit = archivedLimitRef.current || 20;
       const response = await tasksAPI.getArchivedAdmin({ page, limit });
       if (response.data.success) {
         setTasks(response.data.data.tasks || []);
-        setArchivedPagination(response.data.data.pagination || archivedPagination);
+        setArchivedPagination(prev => response.data.data.pagination || prev);
       } else {
         toast.error(response.data.message || 'Failed to load archived tasks');
       }
@@ -72,7 +84,7 @@ const TasksManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -208,7 +220,7 @@ const TasksManagement = () => {
 
   useEffect(() => {
     loadTasks();
-  }, []);
+  }, [loadTasks]);
 
   if (loading && tasks.length === 0) {
     return (
@@ -278,7 +290,7 @@ const TasksManagement = () => {
               <p className="text-gray-600 text-sm">{t('tasks.totalTasks')}</p>
               <p className="text-2xl font-bold text-gray-900">{currentPagination.totalCount}</p>
             </div>
-            <FileText className="h-10 w-10 text-brand-100 text-brand-600" />
+            <FileText className="h-10 w-10 text-brand-600" />
           </div>
         </div>
       </div>

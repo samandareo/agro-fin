@@ -58,7 +58,7 @@
         "createUser": "Создание пользователя",
         "editUser": "Редактирование пользователя",
         "userName": "Имя пользователя",
-        "userNamePlaceholder": "Введите имя пользователя",
+        "namePlaceholder": "Введите имя",
         "telegramIdPlaceholder": "Введите имя пользователя",
         "passwordPlaceholder": "Введите пароль",
         "selectGroup": "Выберите группу",

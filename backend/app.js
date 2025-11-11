@@ -11,7 +11,9 @@ app.use(cors({
     "https://agro-fin-user.vercel.app",
     "https://agro-fin-admin.vercel.app",
     "http://localhost:3000",
-    "http://localhost:3001"
+    "http://localhost:3001",
+    "http://fin.agrobank.uz",
+    "http://ufin.agrobank.uz"
   ],
   credentials: true
 }));

@@ -162,6 +162,45 @@ const TaskDetailModal = ({ task, onClose, onTaskUpdated, isCompact = false }) =>
     }
   };
 
+  const handleUploadFileForUser = async (e, userId) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploading(userId || 'admin');
+    try {
+      console.log(`Uploading file: ${file.name} for user: ${userId || 'admin'}`);
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await tasksAPI.uploadFile(task.id, formData);
+      console.log('Upload response:', response.data);
+
+      if (response.data.success) {
+        toast.success(t('tasks.fileUploaded'));
+        // The response.data.data contains the complete task details with files
+        const taskData = response.data.data;
+        console.log('Task data after upload:', taskData);
+
+        if (taskData.files) {
+          console.log('Updating files state:', taskData.files);
+          setFiles(taskData.files);
+        }
+
+        // Clear the file input
+        e.target.value = '';
+        if (onTaskUpdated) onTaskUpdated();
+      } else {
+        toast.error(response.data.message || 'Failed to upload file');
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error(error.response?.data?.message || 'Failed to upload file');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Legacy function - keeping for backward compatibility
   const handleUploadFile = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -298,75 +337,215 @@ const TaskDetailModal = ({ task, onClose, onTaskUpdated, isCompact = false }) =>
   if (isCompact) {
     return (
       <div className="space-y-6">
-        {/* Assigned Users */}
+        {/* Enhanced Assigned Users with File Management */}
         <div>
-          <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+          <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <User className="h-4 w-4" />
             {t('tasks.assignedUsers')} ({assignedUsers.length})
           </h4>
-          <div className="space-y-2">
-            {assignedUsers.length === 0 ? (
-              <p className="text-gray-600 text-sm">{t('tasks.noAssignedUsers')}</p>
-            ) : (
-              assignedUsers.map(userAssignment => (
-                <div key={userAssignment.user_id} className="flex items-center justify-between bg-white p-3 rounded border border-gray-200">
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900">{userAssignment.name}</p>
-                    <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
-                      <span>{userAssignment.telegram_id}</span>
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${getAssignmentStatusColor(userAssignment.status)}`}>
-                        {getAssignmentStatusLabel(userAssignment.status)}
-                      </span>
-                      {userAssignment.updated_at && (
-                        <span className="text-xs text-gray-500">
-                          {new Date(userAssignment.updated_at).toLocaleString()}
-                        </span>
-                      )}
+          
+          {assignedUsers.length === 0 ? (
+            <p className="text-gray-600 text-sm bg-gray-50 p-4 rounded-lg">{t('tasks.noAssignedUsers')}</p>
+          ) : (
+            <div className="space-y-4">
+              {assignedUsers.map(userAssignment => {
+                // Filter files uploaded by this user
+                const userFiles = files.filter(file => 
+                  file.uploaded_by === userAssignment.user_id
+                );
+                
+                // Also include files with no uploader (legacy or admin files) for the first user only
+                const adminFiles = assignedUsers[0]?.user_id === userAssignment.user_id 
+                  ? files.filter(file => !file.uploaded_by || file.uploader_name === null)
+                  : [];
+
+                return (
+                  <div key={userAssignment.user_id} className="border border-gray-200 rounded-lg overflow-hidden">
+                    {/* User Header */}
+                    <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-brand-100 rounded-full flex items-center justify-center">
+                              <User className="h-4 w-4 text-brand-600" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-900">{userAssignment.name}</p>
+                              <p className="text-sm text-gray-600">{userAssignment.telegram_id}</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-3">
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${getAssignmentStatusColor(userAssignment.status)}`}>
+                            {getAssignmentStatusLabel(userAssignment.status)}
+                          </span>
+                          {userAssignment.updated_at && (
+                            <span className="text-xs text-gray-500">
+                              {new Date(userAssignment.updated_at).toLocaleString()}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* User Files Section */}
+                    <div className="p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h5 className="text-sm font-medium text-gray-800 flex items-center gap-2">
+                          <FileText className="h-4 w-4" />
+                          {t('tasks.userFiles')} ({userFiles.length + adminFiles.length})
+                        </h5>
+                        
+                        {/* File Upload for this user */}
+                        <div>
+                          <input
+                            type="file"
+                            onChange={(e) => handleUploadFileForUser(e, userAssignment.user_id)}
+                            disabled={uploading}
+                            className="hidden"
+                            id={`file-input-user-${userAssignment.user_id}`}
+                            accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.xls,.xlsx,.ppt,.pptx"
+                          />
+                          <label
+                            htmlFor={`file-input-user-${userAssignment.user_id}`}
+                            className="inline-flex items-center gap-1 px-3 py-1 bg-brand-50 text-brand-700 rounded-lg hover:bg-brand-100 transition-colors cursor-pointer text-sm"
+                          >
+                            <Plus className="h-4 w-4" />
+                            {uploading === userAssignment.user_id ? t('tasks.uploading') : t('tasks.uploadFile')}
+                          </label>
+                        </div>
+                      </div>
+
+                      {/* Files List */}
+                      <div className="space-y-2">
+                        {userFiles.length === 0 && adminFiles.length === 0 ? (
+                          <div className="text-center py-6 text-gray-500 bg-gray-50 rounded-lg">
+                            <FileText className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                            <p className="text-sm">{t('tasks.noUserFiles')}</p>
+                          </div>
+                        ) : (
+                          <>
+                            {/* User's own files */}
+                            {userFiles.map(file => (
+                              <div key={file.id} className="flex items-center justify-between bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <FileText className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                                    <div className="min-w-0 flex-1">
+                                      <p className="font-medium text-blue-900 truncate">{file.file_name}</p>
+                                      <div className="flex items-center gap-3 text-xs text-blue-700 mt-1">
+                                        <span>{t('tasks.uploadedBy')}: {file.uploader_name || t('tasks.unknown')}</span>
+                                        <span>{new Date(file.uploaded_at).toLocaleString()}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-1 ml-2 flex-shrink-0">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDownloadFile(file.id, file.file_name)}
+                                    className="p-2 text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                                    title={t('tasks.download')}
+                                  >
+                                    <Download className="h-4 w-4" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteFile(file.id)}
+                                    className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
+                                    title={t('tasks.deleteFile')}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                            
+                            {/* Admin files (shown only for first user) */}
+                            {adminFiles.map(file => (
+                              <div key={file.id} className="flex items-center justify-between bg-gray-50 border border-gray-200 p-3 rounded-lg">
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <FileText className="h-4 w-4 text-gray-600 flex-shrink-0" />
+                                    <div className="min-w-0 flex-1">
+                                      <p className="font-medium text-gray-900 truncate">{file.file_name}</p>
+                                      <div className="flex items-center gap-3 text-xs text-gray-600 mt-1">
+                                        <span className="bg-gray-200 px-2 py-1 rounded text-xs font-medium">
+                                          {t('tasks.adminFile')}
+                                        </span>
+                                        <span>{new Date(file.uploaded_at).toLocaleString()}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-1 ml-2 flex-shrink-0">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDownloadFile(file.id, file.file_name)}
+                                    className="p-2 text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                                    title={t('tasks.download')}
+                                  >
+                                    <Download className="h-4 w-4" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteFile(file.id)}
+                                    className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
+                                    title={t('tasks.deleteFile')}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
-            )}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        {/* Files */}
-        <div>
-          <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            {t('tasks.attachedFiles')} ({files.length})
-          </h4>
-          <div className="space-y-2">
-            {files.length === 0 ? (
-              <p className="text-gray-600 text-sm">{t('tasks.noFiles')}</p>
-            ) : (
-              files.map(file => (
-                <div key={file.id} className="flex items-center justify-between bg-white p-3 rounded border border-gray-200 hover:border-brand-300 hover:shadow-sm transition-all">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 truncate">{file.file_name}</p>
-                    <p className="text-xs text-gray-600 mt-1">
-                      {new Date(file.uploaded_at).toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1 ml-2 flex-shrink-0">
-                    <button
-                      onClick={() => handleDownloadFile(file.id, file.file_name)}
-                      className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                      title="Download file"
-                    >
-                      <Download className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteFile(file.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
-                      title="Delete file"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
+        {/* General Admin Files Upload */}
+        <div className="border-t pt-6">
+          <div className="bg-gradient-to-r from-brand-50 to-brand-100 border border-brand-200 rounded-lg p-4">
+            <h5 className="font-medium text-brand-900 mb-3 flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              {t('tasks.adminFileUpload')}
+            </h5>
+            <div className="relative">
+              <input
+                type="file"
+                onChange={(e) => handleUploadFileForUser(e, null)} // null means admin upload
+                disabled={uploading}
+                className="hidden"
+                id={`admin-file-input-${task.id}`}
+                accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.xls,.xlsx,.ppt,.pptx"
+              />
+              <label
+                htmlFor={`admin-file-input-${task.id}`}
+                className="block w-full px-4 py-3 border-2 border-dashed border-brand-300 rounded-lg text-center cursor-pointer hover:border-brand-500 hover:bg-brand-50 transition-colors"
+              >
+                {uploading === 'admin' ? (
+                  <span className="text-brand-700 flex items-center justify-center gap-2">
+                    <div className="h-4 w-4 rounded-full border-2 border-brand-300 border-t-brand-600 animate-spin"></div>
+                    {t('tasks.uploading')}
+                  </span>
+                ) : (
+                  <span className="text-brand-700 flex items-center justify-center gap-2">
+                    <Plus className="h-5 w-5" />
+                    {t('tasks.uploadAdminFile')}
+                  </span>
+                )}
+              </label>
+              <p className="text-xs text-brand-600 mt-2 text-center">
+                {t('tasks.adminFileDescription')}
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -570,77 +749,6 @@ const TaskDetailModal = ({ task, onClose, onTaskUpdated, isCompact = false }) =>
                   </select>
                 </div>
               )}
-            </div>
-
-            {/* Files */}
-            <div className="border-t pt-6">
-              <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                {t('tasks.attachedFiles')} ({files.length})
-              </h3>
-
-              <div className="space-y-3 mb-4">
-                {files.length === 0 ? (
-                  <p className="text-gray-600 text-sm">{t('tasks.noFiles')}</p>
-                ) : (
-                  files.map(file => (
-                    <div key={file.id} className="flex items-center justify-between bg-gray-50 p-4 rounded border border-gray-200 hover:border-brand-300 hover:bg-gray-100 transition-all">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-900 truncate">{file.file_name}</p>
-                        <p className="text-xs text-gray-600 mt-1">
-                          {new Date(file.uploaded_at).toLocaleString()}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-1 ml-2 flex-shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => handleDownloadFile(file.id, file.file_name)}
-                          className="p-2 text-blue-600 hover:bg-blue-100 rounded transition-colors"
-                          title="Download file"
-                        >
-                          <Download className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteFile(file.id)}
-                          className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
-                          title="Delete file"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* Upload File */}
-              <div className="relative">
-                <input
-                  type="file"
-                  onChange={handleUploadFile}
-                  disabled={uploading}
-                  className="hidden"
-                  id={`file-input-${task.id}`}
-                  ref={(input) => setSelectedFile(input)}
-                />
-                <label
-                  htmlFor={`file-input-${task.id}`}
-                  className="block w-full px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-center cursor-pointer hover:border-brand-500 hover:bg-brand-50 transition-colors"
-                >
-                  {uploading ? (
-                    <span className="text-gray-600 flex items-center justify-center gap-2">
-                      <div className="h-4 w-4 rounded-full border-2 border-gray-300 border-t-brand-600 animate-spin"></div>
-                      {t('tasks.uploading')}
-                    </span>
-                  ) : (
-                    <span className="text-gray-600 flex items-center justify-center gap-2">
-                      <Plus className="h-5 w-5" />
-                      {t('tasks.uploadFile')}
-                    </span>
-                  )}
-                </label>
-              </div>
             </div>
 
             {/* Submit */}

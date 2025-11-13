@@ -311,6 +311,7 @@ const TasksManagement = () => {
                   <th className="table-header">{t('tasks.title')}</th>
                   <th className="table-header">{t('tasks.statusLabel')}</th>
                   <th className="table-header">{t('tasks.assignedUsers')}</th>
+                  <th className="table-header">{t('tasks.attachedFiles')}</th>
                   <th className="table-header">{t('tasks.deadline')}</th>
                   <th className="table-header">{t('tasks.createdBy')}</th>
                   <th className="table-header text-center">{t('common.actions')}</th>
@@ -346,6 +347,19 @@ const TasksManagement = () => {
                           <span className="text-sm font-medium text-gray-900">
                             {task.assigned_users_count || 0}
                           </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <FileText className="h-4 w-4 text-gray-500" />
+                          <span className="text-sm font-medium text-gray-900">
+                            {task.files_count || 0}
+                          </span>
+                          {(task.files_count || 0) > 0 && (
+                            <span className="text-xs text-gray-500">
+                              {t('tasks.filesCount')}
+                            </span>
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
@@ -387,7 +401,7 @@ const TasksManagement = () => {
                     {/* Expanded Row - Task Details & Users */}
                     {expandedTaskId === task.id && (
                       <tr className="bg-gray-50 border-t border-b border-gray-200">
-                        <td colSpan="6" className="px-6 py-4">
+                        <td colSpan="7" className="px-6 py-4">
                           <TaskDetailModal
                             task={task}
                             onTaskUpdated={() => handleTabChange(activeTab)}

@@ -109,20 +109,23 @@ exports.getTaskById = async (taskId) => {
     return rows[0] || null;
 };
 
-// Get all files attached to a task
+// Get all files attached to a task with uploader information
 exports.getTaskFiles = async (taskId) => {
     const { rows } = await pool.query(`
         SELECT
-            id,
-            task_id,
-            file_name,
-            file_path,
-            file_type,
-            uploaded_by,
-            uploaded_at
-        FROM tasks_files
-        WHERE task_id = $1
-        ORDER BY uploaded_at DESC
+            tf.id,
+            tf.task_id,
+            tf.file_name,
+            tf.file_path,
+            tf.file_type,
+            tf.uploaded_by,
+            tf.uploaded_at,
+            u.name as uploader_name,
+            u.telegram_id as uploader_telegram_id
+        FROM tasks_files tf
+        LEFT JOIN users u ON tf.uploaded_by = u.id
+        WHERE tf.task_id = $1
+        ORDER BY tf.uploaded_at DESC
     `, [taskId]);
     return rows || [];
 };
@@ -306,10 +309,12 @@ exports.getAllTasks = async (limit, offset) => {
             t.status,
             u.name as created_by_name,
             u.id as created_by_id,
-            COUNT(DISTINCT tu.user_id) as assigned_users_count
+            COUNT(DISTINCT tu.user_id) as assigned_users_count,
+            COUNT(DISTINCT tf.id) as files_count
         FROM tasks t
         LEFT JOIN users u ON t.created_by = u.id
         LEFT JOIN tasks_users tu ON t.id = tu.task_id
+        LEFT JOIN tasks_files tf ON t.id = tf.task_id
         GROUP BY t.id, u.id, u.name
         ORDER BY t.created_at DESC
         LIMIT $1 OFFSET $2
@@ -337,10 +342,12 @@ exports.getActiveTasksAdmin = async (limit, offset) => {
             t.status,
             u.name as created_by_name,
             u.id as created_by_id,
-            COUNT(DISTINCT tu.user_id) as assigned_users_count
+            COUNT(DISTINCT tu.user_id) as assigned_users_count,
+            COUNT(DISTINCT tf.id) as files_count
         FROM tasks t
         LEFT JOIN users u ON t.created_by = u.id
         LEFT JOIN tasks_users tu ON t.id = tu.task_id
+        LEFT JOIN tasks_files tf ON t.id = tf.task_id
         WHERE t.id NOT IN (
             -- Exclude tasks where ALL users have completed
             SELECT t2.id
@@ -374,10 +381,12 @@ exports.getArchivedTasksAdmin = async (limit, offset) => {
             t.status,
             u.name as created_by_name,
             u.id as created_by_id,
-            COUNT(DISTINCT tu.user_id) as assigned_users_count
+            COUNT(DISTINCT tu.user_id) as assigned_users_count,
+            COUNT(DISTINCT tf.id) as files_count
         FROM tasks t
         LEFT JOIN users u ON t.created_by = u.id
         LEFT JOIN tasks_users tu ON t.id = tu.task_id
+        LEFT JOIN tasks_files tf ON t.id = tf.task_id
         WHERE t.id IN (
             -- Select tasks where ALL users have completed
             SELECT t2.id
@@ -457,10 +466,12 @@ exports.getActiveTasksDirector = async (createdById, limit, offset) => {
             t.status,
             u.name as created_by_name,
             u.id as created_by_id,
-            COUNT(DISTINCT tu.user_id) as assigned_users_count
+            COUNT(DISTINCT tu.user_id) as assigned_users_count,
+            COUNT(DISTINCT tf.id) as files_count
         FROM tasks t
         LEFT JOIN users u ON t.created_by = u.id
         LEFT JOIN tasks_users tu ON t.id = tu.task_id
+        LEFT JOIN tasks_files tf ON t.id = tf.task_id
         WHERE t.created_by = $1
         AND t.id NOT IN (
             -- Exclude tasks where ALL users have completed
@@ -495,10 +506,12 @@ exports.getArchivedTasksDirector = async (createdById, limit, offset) => {
             t.status,
             u.name as created_by_name,
             u.id as created_by_id,
-            COUNT(DISTINCT tu.user_id) as assigned_users_count
+            COUNT(DISTINCT tu.user_id) as assigned_users_count,
+            COUNT(DISTINCT tf.id) as files_count
         FROM tasks t
         LEFT JOIN users u ON t.created_by = u.id
         LEFT JOIN tasks_users tu ON t.id = tu.task_id
+        LEFT JOIN tasks_files tf ON t.id = tf.task_id
         WHERE t.created_by = $1
         AND t.id IN (
             -- Select tasks where ALL users have completed

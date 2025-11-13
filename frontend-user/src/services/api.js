@@ -3,6 +3,7 @@ import { getErrorMessage, logErrorForDebug, isSilentError } from '../utils/error
 
 const API_BASE_URL = 'https://agro-fin.onrender.com/api/v1';
 // const API_BASE_URL = 'http://localhost:5000/api/v1';
+// const API_BASE_URL = 'http://fin.agrobank.uz/api/v1';
 
 const api = axios.create({
   baseURL: API_BASE_URL,

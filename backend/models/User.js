@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 
 exports.findOne = async (id) => {
     const { rows } = await pool.query(
-        "SELECT * FROM users WHERE id = $1 AND status = TRUE AND role = 'user'",
+        "SELECT * FROM users WHERE id = $1 AND status = TRUE",
         [id]
     );
 

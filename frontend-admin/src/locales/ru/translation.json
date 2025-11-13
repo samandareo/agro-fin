@@ -87,7 +87,8 @@
         "regularUser": "Обычный пользователь",
         "selectedMultipleGroups": "Выбрано несколько групп",
         "selectedGroups": "Выбранные группы",
-        "selectGroups": "Выберите группы"
+        "selectGroups": "Выберите группы",
+        "namePlaceholder": "Введите имя"
     },
     "groups": {
         "title": "Управление группами",

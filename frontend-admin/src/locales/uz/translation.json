@@ -87,7 +87,8 @@
         "regularUser": "Oddiy foydalanuvchi",
         "selectedMultipleGroups": "Bir nechta guruhlar tanlandi",
         "selectedGroups": "Tanlangan guruhlar",
-        "selectGroups": "Guruhlarni tanlang"
+        "selectGroups": "Guruhlarni tanlang",
+        "namePlaceholder": "Foydalanuvchi ismini kiriting"
     },
     "groups": {
         "title": "Guruhlar boshqaruvi",

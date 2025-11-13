@@ -115,11 +115,12 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
 
     // Validate group selection
     const isDirector = formData.roleId === '3';
-    if (isDirector && formData.groupIds.length === 0) {
+    const isAdmin = formData.roleId === '1';
+    if (!isAdmin && (isDirector && formData.groupIds.length === 0)) {
       alert(t('users.selectAtLeastOneGroup') || 'Please select at least one group');
       return;
     }
-    if (!isDirector && !formData.groupId && (formData.roleId === '2' || formData.roleId === '3')) {
+    if (!isAdmin && (!isDirector && !formData.groupId && (formData.roleId === '2' || formData.roleId === '3'))) {
       alert(t('users.selectGroup') || 'Please select a group');
       return;
     }

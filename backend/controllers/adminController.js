@@ -219,6 +219,7 @@ exports.createUser = async (req, res, next) => {
         // Check if user is director (roleId === 3)
         const isDirector = Number(roleId) === 3;
         const isAdmin = Number(roleId) === 1;
+        const isRegularUser = Number(roleId) === 2;
         
         if (isDirector) {
             // Directors: assign multiple groups
@@ -232,7 +233,7 @@ exports.createUser = async (req, res, next) => {
                 await User.findByIdAndDelete(user.id);
                 return ApiResponse.error("Failed to assign groups to director").send(res);
             }
-        } else if (!isAdmin) {
+        } else if (!isAdmin && isRegularUser) {
             if (!groupId) {
                 await User.findByIdAndDelete(user.id);
                 return ApiResponse.badRequest("User must be assigned to a group").send(res);

@@ -160,6 +160,29 @@ export const TasksProvider = ({ children }) => {
     }
   };
 
+  const uploadFile = async (taskId, formData) => {
+    try {
+      const response = await api.post(`/tasks/user/${taskId}/upload-file`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      // Update task details with the new file
+      if (taskDetails && taskDetails.id === parseInt(taskId)) {
+        setTaskDetails(response.data.data);
+      }
+      
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error('Upload error:', error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to upload file' 
+      };
+    }
+  };
+
   useEffect(() => {
     if (isAuthenticated) {
       loadTasks();
@@ -180,6 +203,7 @@ export const TasksProvider = ({ children }) => {
     getTaskDetail,
     updateTaskStatus,
     downloadFile,
+    uploadFile,
     pagination,
     activeTasksCount
   };

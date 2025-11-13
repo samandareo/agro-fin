@@ -679,6 +679,77 @@ exports.uploadTaskFile = async (req, res, next) => {
     }
 };
 
+// POST: Upload file to task (user)
+exports.uploadTaskFileUser = async (req, res, next) => {
+    try {
+        const { taskId } = req.params;
+
+        console.log('=== User File Upload Request ===');
+        console.log('Task ID:', taskId);
+        console.log('User ID:', req.user?.id);
+        console.log('Request file object:', req.file);
+
+        if (!taskId) {
+            console.error('Task ID is missing');
+            return ApiResponse.badRequest("Task ID is required").send(res);
+        }
+
+        if (!req.file) {
+            console.error('No file found in request');
+            return ApiResponse.badRequest("No file provided").send(res);
+        }
+
+        // Check if task exists
+        const task = await Task.getTaskById(taskId);
+        if (!task) {
+            deleteFile(req.file.path);
+            return ApiResponse.badRequest("Task not found").send(res);
+        }
+
+        // Check if user is assigned to this task
+        const userAssignment = await Task.getUserTaskAssignment(taskId, req.user.id);
+        if (!userAssignment) {
+            deleteFile(req.file.path);
+            return ApiResponse.forbidden("You are not assigned to this task").send(res);
+        }
+
+        console.log('File received:', {
+            fieldname: req.file.fieldname,
+            originalname: req.file.originalname,
+            encoding: req.file.encoding,
+            mimetype: req.file.mimetype,
+            size: req.file.size,
+            path: req.file.path
+        });
+
+        const fileData = {
+            taskId,
+            fileName: req.file.originalname,
+            filePath: req.file.path,
+            fileType: req.file.mimetype,
+            uploadedBy: req.user.id
+        };
+
+        const file = await Task.addTaskFile(fileData);
+
+        if (!file) {
+            deleteFile(req.file.path);
+            return ApiResponse.badRequest("Failed to upload file").send(res);
+        }
+
+        const taskDetails = await Task.getTaskWithDetailsForUser(taskId, req.user.id);
+
+        return ApiResponse.success(taskDetails, "File uploaded successfully").send(res);
+    } catch (error) {
+        console.error('User file upload error:', error);
+        // Clean up uploaded file if there's an error
+        if (req.file) {
+            deleteFile(req.file.path);
+        }
+        return ApiResponse.error(error.message).send(res);
+    }
+};
+
 // DELETE: Delete file from task (admin only)
 exports.deleteTaskFile = async (req, res, next) => {
     try {

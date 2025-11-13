@@ -135,7 +135,11 @@ export const tasksAPI = {
 
   updateTaskStatus: (taskId, status) => api.put(`/tasks/user/${taskId}/status`, { status }),
 
-  downloadFile: (fileId) => api.get(`/tasks/files/${fileId}/download`, {
+  uploadFile: (taskId, formData) => api.post(`/tasks/user/${taskId}/upload-file`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+
+  downloadFile: (fileId) => api.get(`/tasks/file/${fileId}/download`, {
     responseType: 'blob'
   }),
 };

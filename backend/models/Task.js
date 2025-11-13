@@ -265,6 +265,15 @@ exports.updateUserTaskStatus = async (taskId, userId, status) => {
     return rows[0] || null;
 };
 
+// Get user task assignment (check if user is assigned to task)
+exports.getUserTaskAssignment = async (taskId, userId) => {
+    const { rows } = await pool.query(`
+        SELECT * FROM tasks_users
+        WHERE task_id = $1 AND user_id = $2
+    `, [taskId, userId]);
+    return rows[0] || null;
+};
+
 // Add file to task
 exports.addTaskFile = async (data) => {
     const { taskId, fileName, filePath, fileType, uploadedBy } = data;

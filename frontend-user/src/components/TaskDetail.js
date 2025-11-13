@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useTasks } from '../contexts/TasksContext';
-import { X, FileText, Download, Clock, User, CheckCircle2, AlertCircle } from 'lucide-react';
+import { X, FileText, Download, Clock, User, CheckCircle2, AlertCircle, Upload, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatDateToDDMMYYYY, formatDateTimeTo24Hour } from '../utils/fileUtils';
+import toast from 'react-hot-toast';
 
 const TaskDetail = ({ task, onClose }) => {
-  const { taskDetails, updateTaskStatus, downloadFile, loading: contextLoading } = useTasks();
+  const { taskDetails, updateTaskStatus, downloadFile, uploadFile, getTaskDetail, loading: contextLoading } = useTasks();
   const { t } = useTranslation();
   const [selectedStatus, setSelectedStatus] = useState(task.user_status);
   const [updating, setUpdating] = useState(false);
   const [details, setDetails] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
 
   useEffect(() => {
     if (taskDetails) {
@@ -34,6 +37,47 @@ const TaskDetail = ({ task, onClose }) => {
 
   const handleDownloadFile = (file) => {
     downloadFile(file.id, file.file_name);
+  };
+
+  const handleFileSelect = (event) => {
+    const file = event.target.files[0];
+    setSelectedFile(file);
+  };
+
+  const handleFileUpload = async () => {
+    if (!selectedFile) {
+      toast.error(t('tasks.selectFileFirst'));
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      const result = await uploadFile(task.id, formData);
+      if (result.success) {
+        toast.success(t('tasks.fileUploadedSuccessfully'));
+        setSelectedFile(null);
+        // Reset file input
+        const fileInput = document.getElementById('file-upload-input');
+        if (fileInput) fileInput.value = '';
+        // Refresh task details
+        await getTaskDetail(task.id);
+      } else {
+        toast.error(result.message || t('tasks.fileUploadFailed'));
+      }
+    } catch (error) {
+      toast.error(t('tasks.fileUploadFailed'));
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemoveSelectedFile = () => {
+    setSelectedFile(null);
+    const fileInput = document.getElementById('file-upload-input');
+    if (fileInput) fileInput.value = '';
   };
 
   const getStatusColor = (status) => {
@@ -90,7 +134,7 @@ const TaskDetail = ({ task, onClose }) => {
           {/* Description Section */}
           {displayData.description && (
             <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-sm font-semibold text-gray-900 mb-2">{t('tasks.description')}</h3>
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">{t('tasks.taskDescription')}</h3>
               <p className="text-gray-700 whitespace-pre-wrap">{displayData.description}</p>
             </div>
           )}
@@ -186,6 +230,79 @@ const TaskDetail = ({ task, onClose }) => {
                   )}
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* File Upload Section */}
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <Upload className="h-4 w-4" />
+              {t('tasks.uploadFile')}
+            </h3>
+            
+            <div className="space-y-3">
+              {/* File Input */}
+              <div>
+                <input
+                  id="file-upload-input"
+                  type="file"
+                  onChange={handleFileSelect}
+                  className="block w-full text-sm text-gray-500 
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-lg file:border-0
+                    file:text-sm file:font-medium
+                    file:bg-brand-50 file:text-brand-700
+                    hover:file:bg-brand-100
+                    file:cursor-pointer cursor-pointer"
+                  accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.xls,.xlsx,.ppt,.pptx"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  {t('tasks.supportedFormats')}: PDF, DOC, DOCX, TXT, JPG, PNG, XLS, XLSX, PPT, PPTX
+                </p>
+              </div>
+
+              {/* Selected File Preview */}
+              {selectedFile && (
+                <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <FileText className="h-5 w-5 text-blue-600" />
+                    <div>
+                      <p className="font-medium text-blue-900">{selectedFile.name}</p>
+                      <p className="text-xs text-blue-700">
+                        {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleRemoveSelectedFile}
+                    className="p-1 text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+
+              {/* Upload Button */}
+              <button
+                onClick={handleFileUpload}
+                disabled={!selectedFile || uploading}
+                className={`
+                  w-full py-2 px-4 rounded-lg font-medium transition-colors
+                  ${!selectedFile || uploading 
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                    : 'bg-brand-600 text-white hover:bg-brand-700'
+                  }
+                `}
+              >
+                {uploading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <div className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
+                    {t('tasks.uploading')}
+                  </span>
+                ) : (
+                  t('tasks.uploadFile')
+                )}
+              </button>
             </div>
           </div>
 

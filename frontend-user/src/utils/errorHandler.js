@@ -20,7 +20,7 @@ export class SilentError extends Error {
  * @param {String} defaultMessage - Fallback message if no match found
  * @returns {String|SilentError} User-friendly error message or SilentError for 403
  */
-export const getErrorMessage = (error, defaultMessage = 'An error occurred. Please try again.') => {
+export const getErrorMessage = (error, defaultMessage = 'Произошла ошибка. Пожалуйста, попробуйте снова.') => {
   // If error has response from server
   if (error.response) {
     const status = error.response.status;
@@ -37,26 +37,43 @@ export const getErrorMessage = (error, defaultMessage = 'An error occurred. Plea
 
     // Handle 401 Unauthorized
     if (status === 401) {
-      return 'Your session has expired. Please log in again.';
+      return 'Ваша сессия истекла. Пожалуйста, войдите в систему снова.';
     }
 
     // Handle 404 Not Found
     if (status === 404) {
-      return 'The requested resource was not found.';
+      return 'Запрашиваемый ресурс не найден.';
     }
 
     // Handle 409 Conflict
     if (status === 409) {
-      return 'This resource already exists or there is a conflict with existing data.';
+      return 'Этот ресурс уже существует или есть конфликт с существующими данными.';
     }
 
     // Handle 400 Bad Request
     if (status === 400) {
       // Check if API provided a specific message
       if (data?.message && typeof data.message === 'string') {
-        return data.message;
+        // Handle specific database constraint error messages
+        const message = data.message;
+        
+        // Convert common constraint violations to user-friendly messages
+        if (message.includes('Пользователь с таким именем пользователя уже существует')) {
+          return 'Пользователь с таким именем пользователя уже зарегистрирован в системе';
+        }
+        if (message.includes('Пользователь с таким именем уже существует')) {
+          return 'Пользователь с таким именем уже зарегистрирован';
+        }
+        if (message.includes('Группа с таким названием уже существует')) {
+          return 'Группа с таким названием уже создана';
+        }
+        if (message.includes('Данные уже существуют в системе')) {
+          return 'Такие данные уже существуют в системе';
+        }
+        
+        return message;
       }
-      return 'Invalid input. Please check your data and try again.';
+      return 'Неверные данные. Проверьте введенную информацию и попробуйте снова.';
     }
 
     // Handle 422 Unprocessable Entity (Validation errors)
@@ -64,17 +81,17 @@ export const getErrorMessage = (error, defaultMessage = 'An error occurred. Plea
       if (data?.message && typeof data.message === 'string') {
         return data.message;
       }
-      return 'Please check your input and try again.';
+      return 'Пожалуйста, проверьте введенные данные и попробуйте снова.';
     }
 
     // Handle 500 Server Error
     if (status === 500) {
-      return 'An error occurred on the server. Please try again later.';
+      return 'Произошла ошибка на сервере. Пожалуйста, попробуйте позже.';
     }
 
     // Handle other 5xx Server Errors
     if (status >= 500) {
-      return 'A server error occurred. Please try again later.';
+      return 'Произошла ошибка сервера. Пожалуйста, попробуйте позже.';
     }
 
     // If server provided a custom message, use it for non-sensitive errors
@@ -85,13 +102,13 @@ export const getErrorMessage = (error, defaultMessage = 'An error occurred. Plea
 
   // If no network response (network error)
   if (error.request && !error.response) {
-    return 'Network error. Please check your connection and try again.';
+    return 'Ошибка сети. Проверьте подключение к интернету и попробуйте снова.';
   }
 
   // If error is in request setup
   if (error.message) {
     if (error.message.includes('timeout')) {
-      return 'Request timed out. Please try again.';
+      return 'Время ожидания истекло. Попробуйте снова.';
     }
     // Don't expose raw error messages
     return defaultMessage;

@@ -198,22 +198,22 @@ exports.createUser = async (req, res, next) => {
         let status = req.body.status;
 
         if (!name || !telegramId || !password) {
-            return ApiResponse.badRequest("All required fields must be filled").send(res);
+            return ApiResponse.badRequest("Все обязательные поля должны быть заполнены").send(res);
         }
 
         if (!roleId) {
-            return ApiResponse.badRequest("Role is required").send(res);
+            return ApiResponse.badRequest("Роль обязательна для заполнения").send(res);
         }
 
         const existingUser = await User.findByTelegramId(telegramId);
         if (existingUser) {
-            return ApiResponse.badRequest("User already exists").send(res);
+            return ApiResponse.badRequest("Пользователь с таким именем пользователя уже существует").send(res);
         }
 
         const user = await User.create({ name, telegramId, password, status, roleId: Number(roleId) });
 
         if (!user) {
-            return ApiResponse.error("Failed to create user").send(res);
+            return ApiResponse.error("Не удалось создать пользователя").send(res);
         }
     
         // Check if user is director (roleId === 3)
@@ -262,7 +262,8 @@ exports.createUser = async (req, res, next) => {
         }, "User created successfully").send(res);
 
     } catch (error) {
-        return ApiResponse.error(error.message).send(res);
+        // Pass the error to the error middleware for proper handling
+        return next(error);
     }
 }
 
@@ -320,7 +321,8 @@ exports.updateUser = async (req, res, next) => {
         console.error(`[ERROR] updateUser error:`, error.message);
         console.error(`[ERROR] updateUser full error:`, error);
         console.error(`[ERROR] Stack trace:`, error.stack);
-        return ApiResponse.error(error.message).send(res);
+        // Pass the error to the error middleware for proper handling
+        return next(error);
     }
 }
 

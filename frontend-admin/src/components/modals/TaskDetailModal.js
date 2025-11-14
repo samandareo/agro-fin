@@ -394,32 +394,13 @@ const TaskDetailModal = ({ task, onClose, onTaskUpdated, isCompact = false }) =>
                       <div className="flex items-center justify-between mb-3">
                         <h5 className="text-sm font-medium text-gray-800 flex items-center gap-2">
                           <FileText className="h-4 w-4" />
-                          {t('tasks.userFiles')} ({userFiles.length + adminFiles.length})
+                          {t('tasks.userFiles')} ({userFiles.length})
                         </h5>
-                        
-                        {/* File Upload for this user */}
-                        <div>
-                          <input
-                            type="file"
-                            onChange={(e) => handleUploadFileForUser(e, userAssignment.user_id)}
-                            disabled={uploading}
-                            className="hidden"
-                            id={`file-input-user-${userAssignment.user_id}`}
-                            accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.xls,.xlsx,.ppt,.pptx"
-                          />
-                          <label
-                            htmlFor={`file-input-user-${userAssignment.user_id}`}
-                            className="inline-flex items-center gap-1 px-3 py-1 bg-brand-50 text-brand-700 rounded-lg hover:bg-brand-100 transition-colors cursor-pointer text-sm"
-                          >
-                            <Plus className="h-4 w-4" />
-                            {uploading === userAssignment.user_id ? t('tasks.uploading') : t('tasks.uploadFile')}
-                          </label>
-                        </div>
                       </div>
 
                       {/* Files List */}
                       <div className="space-y-2">
-                        {userFiles.length === 0 && adminFiles.length === 0 ? (
+                        {userFiles.length === 0 ? (
                           <div className="text-center py-6 text-gray-500 bg-gray-50 rounded-lg">
                             <FileText className="h-8 w-8 mx-auto mb-2 text-gray-400" />
                             <p className="text-sm">{t('tasks.noUserFiles')}</p>
@@ -461,44 +442,6 @@ const TaskDetailModal = ({ task, onClose, onTaskUpdated, isCompact = false }) =>
                                 </div>
                               </div>
                             ))}
-                            
-                            {/* Admin files (shown for all users) */}
-                            {adminFiles.map(file => (
-                              <div key={file.id} className="flex items-center justify-between bg-purple-50 border border-purple-200 p-3 rounded-lg">
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2">
-                                    <FileText className="h-4 w-4 text-purple-600 flex-shrink-0" />
-                                    <div className="min-w-0 flex-1">
-                                      <p className="font-medium text-purple-900 truncate">{file.file_name}</p>
-                                      <div className="flex items-center gap-3 text-xs text-purple-700 mt-1">
-                                        <span className="bg-purple-200 px-2 py-1 rounded text-xs font-medium">
-                                          {t('tasks.adminFile')} - {file.uploader_name || t('tasks.unknown')}
-                                        </span>
-                                        <span>{new Date(file.uploaded_at).toLocaleString()}</span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-1 ml-2 flex-shrink-0">
-                                  <button
-                                    type="button"
-                                    onClick={() => handleDownloadFile(file.id, file.file_name)}
-                                    className="p-2 text-purple-600 hover:bg-purple-100 rounded transition-colors"
-                                    title={t('tasks.download')}
-                                  >
-                                    <Download className="h-4 w-4" />
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleDeleteFile(file.id)}
-                                    className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
-                                    title={t('tasks.deleteFile')}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </button>
-                                </div>
-                              </div>
-                            ))}
                           </>
                         )}
                       </div>
@@ -509,6 +452,54 @@ const TaskDetailModal = ({ task, onClose, onTaskUpdated, isCompact = false }) =>
             </div>
           )}
         </div>
+
+        {/* Admin Uploaded Files Section */}
+        {files.some(f => f.uploader_role === 'admin' || f.uploader_role === 'director') && (
+          <div className="border-t pt-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2 px-6">
+              <FileText className="h-5 w-5" />
+              Admin Uploaded Documents
+            </h3>
+            <div className="px-6 space-y-2 pb-6">
+              {files.filter(f => f.uploader_role === 'admin' || f.uploader_role === 'director').map(file => (
+                <div key={file.id} className="flex items-center justify-between bg-purple-50 border border-purple-200 p-3 rounded-lg">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-purple-600 flex-shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-purple-900 truncate">{file.file_name}</p>
+                        <div className="flex items-center gap-3 text-xs text-purple-700 mt-1">
+                          <span className="bg-purple-200 px-2 py-1 rounded text-xs font-medium">
+                            {file.uploader_name || 'Admin'}
+                          </span>
+                          <span>{new Date(file.uploaded_at).toLocaleString()}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 ml-2 flex-shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadFile(file.id, file.file_name)}
+                      className="p-2 text-purple-600 hover:bg-purple-100 rounded transition-colors"
+                      title={t('tasks.download')}
+                    >
+                      <Download className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteFile(file.id)}
+                      className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
+                      title={t('tasks.deleteFile')}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* General Admin Files Upload */}
         <div className="border-t pt-6">

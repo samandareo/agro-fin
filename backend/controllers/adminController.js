@@ -207,7 +207,7 @@ exports.createUser = async (req, res, next) => {
 
         const existingUser = await User.findByTelegramId(telegramId);
         if (existingUser) {
-            return ApiResponse.badRequest("Пользователь с таким именем пользователя уже существует").send(res);
+            return ApiResponse.badRequest("Пользователь с таким именем пользователя уже существует | Bunday foydalanuvchi nomi bilan foydalanuvchi allaqachon mavjud").send(res);
         }
 
         const user = await User.create({ name, telegramId, password, status, roleId: Number(roleId) });

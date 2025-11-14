@@ -7,31 +7,31 @@ const handleDatabaseError = (err) => {
         if (err.constraint) {
             switch (err.constraint) {
                 case 'users_telegram_id_key':
-                    return ApiResponse.badRequest("Пользователь с таким именем пользователя уже существует");
+                    return ApiResponse.badRequest("Пользователь с таким именем пользователя уже существует | Bunday foydalanuvchi nomi bilan foydalanuvchi allaqachon mavjud");
                 case 'users_name_key':
-                    return ApiResponse.badRequest("Пользователь с таким именем уже существует");
+                    return ApiResponse.badRequest("Пользователь с таким именем уже существует | Bunday ismli foydalanuvchi allaqachon mavjud");
                 case 'groups_name_key':
-                    return ApiResponse.badRequest("Группа с таким названием уже существует");
+                    return ApiResponse.badRequest("Группа с таким названием уже существует | Bunday nomli guruh allaqachon mavjud");
                 default:
-                    return ApiResponse.badRequest("Запись с такими данными уже существует");
+                    return ApiResponse.badRequest("Запись с такими данными уже существует | Bunday ma'lumotlar allaqachon mavjud");
             }
         }
-        return ApiResponse.badRequest("Данные уже существуют в системе");
+        return ApiResponse.badRequest("Данные уже существуют в системе | Ma'lumotlar allaqachon tizimda mavjud");
     }
     
     // Handle foreign key constraint violations
     if (err.code === '23503') {
-        return ApiResponse.badRequest("Связанная запись не найдена или была удалена");
+        return ApiResponse.badRequest("Связанная запись не найдена или была удалена | Bog'langan yozuv topilmadi yoki o'chirilgan");
     }
     
     // Handle not null constraint violations
     if (err.code === '23502') {
-        return ApiResponse.badRequest("Обязательное поле не заполнено");
+        return ApiResponse.badRequest("Обязательное поле не заполнено | Majburiy maydon to'ldirilmagan");
     }
     
     // Handle check constraint violations
     if (err.code === '23514') {
-        return ApiResponse.badRequest("Данные не соответствуют требованиям");
+        return ApiResponse.badRequest("Данные не соответствуют требованиям | Ma'lumotlar talablarga mos kelmaydi");
     }
     
     return null; // Not a database constraint error

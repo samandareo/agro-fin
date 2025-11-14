@@ -7,31 +7,31 @@ const handleDatabaseError = (err) => {
         if (err.constraint) {
             switch (err.constraint) {
                 case 'users_telegram_id_key':
-                    return ApiResponse.badRequest("Пользователь с таким именем пользователя уже существует | Bunday foydalanuvchi nomi bilan foydalanuvchi allaqachon mavjud");
+                    return ApiResponse.badRequest("USERNAME_ALREADY_EXISTS");
                 case 'users_name_key':
-                    return ApiResponse.badRequest("Пользователь с таким именем уже существует | Bunday ismli foydalanuvchi allaqachon mavjud");
+                    return ApiResponse.badRequest("USER_NAME_ALREADY_EXISTS");
                 case 'groups_name_key':
-                    return ApiResponse.badRequest("Группа с таким названием уже существует | Bunday nomli guruh allaqachon mavjud");
+                    return ApiResponse.badRequest("GROUP_NAME_ALREADY_EXISTS");
                 default:
-                    return ApiResponse.badRequest("Запись с такими данными уже существует | Bunday ma'lumotlar allaqachon mavjud");
+                    return ApiResponse.badRequest("DUPLICATE_ENTRY");
             }
         }
-        return ApiResponse.badRequest("Данные уже существуют в системе | Ma'lumotlar allaqachon tizimda mavjud");
+        return ApiResponse.badRequest("DUPLICATE_ENTRY");
     }
     
     // Handle foreign key constraint violations
     if (err.code === '23503') {
-        return ApiResponse.badRequest("Связанная запись не найдена или была удалена | Bog'langan yozuv topilmadi yoki o'chirilgan");
+        return ApiResponse.badRequest("RELATED_RECORD_NOT_FOUND");
     }
     
     // Handle not null constraint violations
     if (err.code === '23502') {
-        return ApiResponse.badRequest("Обязательное поле не заполнено | Majburiy maydon to'ldirilmagan");
+        return ApiResponse.badRequest("REQUIRED_FIELD_MISSING");
     }
     
     // Handle check constraint violations
     if (err.code === '23514') {
-        return ApiResponse.badRequest("Данные не соответствуют требованиям | Ma'lumotlar talablarga mos kelmaydi");
+        return ApiResponse.badRequest("DATA_VALIDATION_FAILED");
     }
     
     return null; // Not a database constraint error
@@ -59,5 +59,5 @@ module.exports = (err, req, res, next) => {
     }
 
     // Generic server error
-    return ApiResponse.error("Произошла внутренняя ошибка сервера").send(res);
+    return ApiResponse.error("INTERNAL_SERVER_ERROR").send(res);
 }

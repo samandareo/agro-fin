@@ -198,22 +198,22 @@ exports.createUser = async (req, res, next) => {
         let status = req.body.status;
 
         if (!name || !telegramId || !password) {
-            return ApiResponse.badRequest("Все обязательные поля должны быть заполнены").send(res);
+            return ApiResponse.badRequest("REQUIRED_FIELDS_MISSING").send(res);
         }
 
         if (!roleId) {
-            return ApiResponse.badRequest("Роль обязательна для заполнения").send(res);
+            return ApiResponse.badRequest("ROLE_REQUIRED").send(res);
         }
 
         const existingUser = await User.findByTelegramId(telegramId);
         if (existingUser) {
-            return ApiResponse.badRequest("Пользователь с таким именем пользователя уже существует | Bunday foydalanuvchi nomi bilan foydalanuvchi allaqachon mavjud").send(res);
+            return ApiResponse.badRequest("USERNAME_ALREADY_EXISTS").send(res);
         }
 
         const user = await User.create({ name, telegramId, password, status, roleId: Number(roleId) });
 
         if (!user) {
-            return ApiResponse.error("Не удалось создать пользователя").send(res);
+            return ApiResponse.error("USER_CREATION_FAILED").send(res);
         }
     
         // Check if user is director (roleId === 3)

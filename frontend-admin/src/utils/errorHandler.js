@@ -20,29 +20,18 @@ export class SilentError extends Error {
  * @param {String} defaultMessage - Fallback message if no match found
  * @returns {String|SilentError} User-friendly error message or SilentError for 403
  */
-/**
- * Parse multilingual error message based on current language
- * @param {String} message - Message in format "Russian | Uzbek"
- * @returns {String} Localized message
- */
-const parseMultilingualMessage = (message) => {
-  // Get current language from i18n or localStorage
-  const currentLanguage = localStorage.getItem('i18nextLng') || 'ru';
-  
-  if (message.includes(' | ')) {
-    const [russian, uzbek] = message.split(' | ');
-    return currentLanguage === 'uz' ? uzbek : russian;
+export const getErrorMessage = (error, defaultMessage = 'errors.general') => {
+  // Import i18n for translation - done dynamically to avoid circular imports
+  let t = (key) => key; // fallback function
+  try {
+    const i18n = require('i18next').default;
+    if (i18n && i18n.t) {
+      t = i18n.t;
+    }
+  } catch (e) {
+    console.warn('i18n not available for error translation');
   }
-  
-  return message;
-};
 
-export const getErrorMessage = (error, defaultMessage = 'Произошла ошибка. Пожалуйста, попробуйте снова. | Xatolik yuz berdi. Iltimos, qayta urinib ko\'ring.') => {
-  const currentLanguage = localStorage.getItem('i18nextLng') || 'ru';
-  
-  // Parse default message for current language
-  const localizedDefaultMessage = parseMultilingualMessage(defaultMessage);
-  
   // If error has response from server
   if (error.response) {
     const status = error.response.status;
@@ -50,8 +39,6 @@ export const getErrorMessage = (error, defaultMessage = 'Произошла ош
 
     // Handle 403 Forbidden - Don't show to users, return silent error
     if (status === 403) {
-      // Return a SilentError that won't be displayed to the user
-      // but can be handled programmatically if needed
       const silentError = new SilentError('Forbidden');
       silentError.response = error.response;
       return silentError;
@@ -59,115 +46,94 @@ export const getErrorMessage = (error, defaultMessage = 'Произошла ош
 
     // Handle 401 Unauthorized
     if (status === 401) {
-      return currentLanguage === 'uz' 
-        ? 'Sizning sessiyangiz tugadi. Iltimos, qaytadan tizimga kiring.'
-        : 'Ваша сессия истекла. Пожалуйста, войдите в систему снова.';
+      return t('errors.unauthorized');
     }
 
     // Handle 404 Not Found
     if (status === 404) {
-      return currentLanguage === 'uz'
-        ? 'So\'ralgan resurs topilmadi.'
-        : 'Запрашиваемый ресурс не найден.';
+      return t('errors.notFound');
     }
 
     // Handle 409 Conflict
     if (status === 409) {
-      return currentLanguage === 'uz'
-        ? 'Ushbu resurs allaqachon mavjud yoki mavjud ma\'lumotlar bilan ziddiyat bor.'
-        : 'Этот ресурс уже существует или есть конфликт с существующими данными.';
+      return t('errors.conflict');
     }
 
     // Handle 400 Bad Request
     if (status === 400) {
-      // Check if API provided a specific message
+      // Check if API provided a specific error code
       if (data?.message && typeof data.message === 'string') {
-        // Handle multilingual constraint error messages
-        const message = data.message;
+        const errorCode = data.message;
         
-        // Parse multilingual message from backend
-        if (message.includes(' | ')) {
-          return parseMultilingualMessage(message);
-        }
+        // Map backend error codes to translation keys
+        const errorKeyMap = {
+          'USERNAME_ALREADY_EXISTS': 'errors.usernameAlreadyExists',
+          'USER_NAME_ALREADY_EXISTS': 'errors.userNameAlreadyExists',
+          'GROUP_NAME_ALREADY_EXISTS': 'errors.groupNameAlreadyExists',
+          'DUPLICATE_ENTRY': 'errors.duplicateEntry',
+          'RELATED_RECORD_NOT_FOUND': 'errors.relatedRecordNotFound',
+          'REQUIRED_FIELD_MISSING': 'errors.requiredFieldMissing',
+          'DATA_VALIDATION_FAILED': 'errors.dataValidationFailed',
+          'REQUIRED_FIELDS_MISSING': 'errors.requiredFieldsMissing',
+          'ROLE_REQUIRED': 'errors.roleRequired',
+          'USER_CREATION_FAILED': 'errors.userCreationFailed',
+          'FILE_ID_REQUIRED': 'errors.fileIdRequired',
+          'FILE_NOT_FOUND': 'errors.fileNotFound',
+          'FILE_ACCESS_DENIED': 'errors.fileAccessDenied',
+          'TASK_ACCESS_DENIED': 'errors.taskAccessDenied',
+          'FILE_DELETION_FAILED': 'errors.fileDeletionFailed',
+        };
         
-        // Handle legacy single-language constraint violations
-        if (message.includes('Пользователь с таким именем пользователя уже существует')) {
-          return currentLanguage === 'uz'
-            ? 'Bunday foydalanuvchi nomi bilan foydalanuvchi allaqachon tizimda ro\'yxatdan o\'tgan'
-            : 'Пользователь с таким именем пользователя уже зарегистрирован в системе';
-        }
-        if (message.includes('Пользователь с таким именем уже существует')) {
-          return currentLanguage === 'uz'
-            ? 'Bunday ismli foydalanuvchi allaqachon ro\'yxatdan o\'tgan'
-            : 'Пользователь с таким именем уже зарегистрирован';
-        }
-        if (message.includes('Группа с таким названием уже существует')) {
-          return currentLanguage === 'uz'
-            ? 'Bunday nomli guruh allaqachon yaratilgan'
-            : 'Группа с таким названием уже создана';
-        }
-        if (message.includes('Данные уже существуют в системе')) {
-          return currentLanguage === 'uz'
-            ? 'Bunday ma\'lumotlar allaqachon tizimda mavjud'
-            : 'Такие данные уже существуют в системе';
+        const translationKey = errorKeyMap[errorCode];
+        if (translationKey) {
+          return t(translationKey);
         }
         
-        return message;
+        // If no mapping found, use the error code as fallback
+        return t(errorCode, errorCode);
       }
-      return currentLanguage === 'uz'
-        ? 'Noto\'g\'ri ma\'lumotlar. Kiritilgan ma\'lumotlarni tekshiring va qayta urinib ko\'ring.'
-        : 'Неверные данные. Проверьте введенную информацию и попробуйте снова.';
+      return t('errors.badRequest');
     }
 
     // Handle 422 Unprocessable Entity (Validation errors)
     if (status === 422) {
       if (data?.message && typeof data.message === 'string') {
-        return parseMultilingualMessage(data.message);
+        const errorCode = data.message;
+        return t(errorCode, errorCode);
       }
-      return currentLanguage === 'uz'
-        ? 'Iltimos, kiritilgan ma\'lumotlarni tekshiring va qayta urinib ko\'ring.'
-        : 'Пожалуйста, проверьте введенные данные и попробуйте снова.';
+      return t('errors.validationError');
     }
 
     // Handle 500 Server Error
     if (status === 500) {
-      return currentLanguage === 'uz'
-        ? 'Serverda xatolik yuz berdi. Iltimos, keyinroq urinib ko\'ring.'
-        : 'Произошла ошибка на сервере. Пожалуйста, попробуйте позже.';
+      return t('errors.serverError');
     }
 
     // Handle other 5xx Server Errors
     if (status >= 500) {
-      return currentLanguage === 'uz'
-        ? 'Server xatoligi yuz berdi. Iltimos, keyinroq urinib ko\'ring.'
-        : 'Произошла ошибка сервера. Пожалуйста, попробуйте позже.';
+      return t('errors.serverError');
     }
 
-    // If server provided a custom message, use it for non-sensitive errors
+    // If server provided a custom message, try to translate it
     if (data?.message && typeof data.message === 'string' && status < 500) {
-      return parseMultilingualMessage(data.message);
+      return t(data.message, data.message);
     }
   }
 
   // If no network response (network error)
   if (error.request && !error.response) {
-    return currentLanguage === 'uz'
-      ? 'Tarmoq xatoligi. Internet ulanishingizni tekshiring va qayta urinib ko\'ring.'
-      : 'Ошибка сети. Проверьте подключение к интернету и попробуйте снова.';
+    return t('errors.networkError');
   }
 
   // If error is in request setup
   if (error.message) {
     if (error.message.includes('timeout')) {
-      return currentLanguage === 'uz'
-        ? 'Kutish vaqti tugadi. Qayta urinib ko\'ring.'
-        : 'Время ожидания истекло. Попробуйте снова.';
+      return t('errors.timeout');
     }
-    // Don't expose raw error messages
-    return localizedDefaultMessage;
+    return t(defaultMessage);
   }
 
-  return localizedDefaultMessage;
+  return t(defaultMessage);
 };
 
 /**

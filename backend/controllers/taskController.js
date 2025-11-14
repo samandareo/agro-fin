@@ -761,14 +761,14 @@ exports.deleteTaskFileUser = async (req, res, next) => {
         console.log('User ID:', userId);
 
         if (!fileId) {
-            return ApiResponse.badRequest("Требуется ID файла").send(res);
+            return ApiResponse.badRequest("FILE_ID_REQUIRED").send(res);
         }
 
         // Get file info before deleting
         const file = await Task.getFileById(fileId);
 
         if (!file) {
-            return ApiResponse.badRequest("Файл не найден").send(res);
+            return ApiResponse.badRequest("FILE_NOT_FOUND").send(res);
         }
 
         console.log('File found:', {
@@ -781,13 +781,13 @@ exports.deleteTaskFileUser = async (req, res, next) => {
         // Check if user owns this file
         if (file.uploaded_by !== userId && parseInt(file.uploaded_by) !== parseInt(userId)) {
             console.error('User does not own this file:', { fileUploadedBy: file.uploaded_by, userId });
-            return ApiResponse.forbidden("Вы можете удалять только свои файлы").send(res);
+            return ApiResponse.forbidden("FILE_ACCESS_DENIED").send(res);
         }
 
         // Check if user is assigned to this task
         const userAssignment = await Task.getUserTaskAssignment(file.task_id, userId);
         if (!userAssignment) {
-            return ApiResponse.forbidden("Вы не назначены на эту задачу").send(res);
+            return ApiResponse.forbidden("TASK_ACCESS_DENIED").send(res);
         }
 
         console.log('Authorization passed, deleting file:', file.file_name);
@@ -798,7 +798,7 @@ exports.deleteTaskFileUser = async (req, res, next) => {
         const deleted = await Task.deleteTaskFile(fileId);
 
         if (!deleted) {
-            return ApiResponse.badRequest("Не удалось удалить файл").send(res);
+            return ApiResponse.badRequest("FILE_DELETION_FAILED").send(res);
         }
 
         console.log('File deleted successfully by user:', file.file_name);
@@ -806,7 +806,7 @@ exports.deleteTaskFileUser = async (req, res, next) => {
         // Return updated task details
         const taskDetails = await Task.getTaskWithDetailsForUser(file.task_id, userId);
         
-        return ApiResponse.success(taskDetails, "Файл успешно удален").send(res);
+        return ApiResponse.success(taskDetails, "FILE_DELETED_SUCCESS").send(res);
     } catch (error) {
         console.error('Error deleting user file:', error);
         return ApiResponse.error(error.message).send(res);

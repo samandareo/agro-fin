@@ -406,5 +406,31 @@
         "October": "Oktabr",
         "November": "Noyabr",
         "December": "Dekabr"
+    },
+    "errors": {
+      "general": "Xatolik yuz berdi. Iltimos, qayta urinib ko'ring.",
+      "unauthorized": "Sizning sessiyangiz tugadi. Iltimos, qaytadan tizimga kiring.",
+      "notFound": "So'ralgan resurs topilmadi.",
+      "conflict": "Ushbu resurs allaqachon mavjud yoki mavjud ma'lumotlar bilan ziddiyat bor.",
+      "badRequest": "Noto'g'ri ma'lumotlar. Kiritilgan ma'lumotlarni tekshiring va qayta urinib ko'ring.",
+      "validationError": "Iltimos, kiritilgan ma'lumotlarni tekshiring va qayta urinib ko'ring.",
+      "serverError": "Serverda xatolik yuz berdi. Iltimos, keyinroq urinib ko'ring.",
+      "networkError": "Tarmoq xatoligi. Internet ulanishingizni tekshiring va qayta urinib ko'ring.",
+      "timeout": "Kutish vaqti tugadi. Qayta urinib ko'ring.",
+      "usernameAlreadyExists": "Bunday foydalanuvchi nomi bilan foydalanuvchi allaqachon tizimda ro'yxatdan o'tgan.",
+      "userNameAlreadyExists": "Bunday ismli foydalanuvchi allaqachon ro'yxatdan o'tgan.",
+      "groupNameAlreadyExists": "Bunday nomli guruh allaqachon yaratilgan.",
+      "duplicateEntry": "Bunday ma'lumotlar allaqachon tizimda mavjud.",
+      "relatedRecordNotFound": "Bog'langan yozuv topilmadi yoki o'chirilgan.",
+      "requiredFieldMissing": "Majburiy maydon to'ldirilmagan.",
+      "dataValidationFailed": "Ma'lumotlar talablarga mos kelmaydi.",
+      "requiredFieldsMissing": "Barcha majburiy maydonlar to'ldirilishi kerak.",
+      "roleRequired": "Rol majburiy maydon.",
+      "userCreationFailed": "Foydalanuvchi yaratib bo'lmadi.",
+      "fileIdRequired": "Fayl identifikatori talab qilinadi.",
+      "fileNotFound": "Fayl topilmadi.",
+      "fileAccessDenied": "Siz faqat o'z fayllaringizni o'chira olasiz.",
+      "taskAccessDenied": "Siz ushbu vazifaga tayinlanmagansiz.",
+      "fileDeletionFailed": "Faylni o'chirib bo'lmadi."
     }
 }

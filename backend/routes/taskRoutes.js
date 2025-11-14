@@ -29,6 +29,7 @@ router.get("/admin/archived-tasks", protectAdmin, checkPermission("task:read"), 
   }
   taskController.getArchivedTasksAdmin(req, res, next);
 });
+router.get("/admin/my-files", protectAdmin, checkPermission("task:read"), taskController.getMyUploadedFiles);
 router.get("/admin/:taskId/detail", protectAdmin, checkPermission("task:read"), taskController.getTaskDetailAdmin);
 router.post("/admin/create", protectAdmin, checkPermission("task:create"), taskController.createTask);
 router.put("/admin/:taskId", protectAdmin, checkPermission("task:update"), taskController.updateTask);
@@ -41,28 +42,43 @@ router.get("/admin/:taskId/users", protectAdmin, checkPermission("task:read"), t
 
 // File management
 router.post("/admin/:taskId/upload-file", protectAdmin, checkPermission("task:manage"), upload.single("file"), taskController.uploadTaskFile);
-// Allow both users and admins to download files (access check is done in controller)
-router.get("/file/:fileId/download", (req, res, next) => {
-  // Authenticate as either user or admin
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) {
+
+// Custom middleware: Allow both users and admins to download files
+const authenticateUserOrAdmin = async (req, res, next) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    // Try to verify as user first
+    const jwt = require('../utils/jwt');
+    const decoded = jwt.verifyAccessToken(token);
+
+    // Try to find as user
+    const User = require('../models/User');
+    const user = await User.findOne(decoded.id);
+    if (user) {
+      req.user = user;
+      return next();
+    }
+
+    // Try to find as admin
+    const Admin = require('../models/Admin');
+    const admin = await Admin.findOne(decoded.id);
+    if (admin) {
+      req.admin = admin;
+      return next();
+    }
+
+    return res.status(401).json({ message: 'Unauthorized' });
+  } catch (error) {
+    console.error('Authentication error:', error);
     return res.status(401).json({ message: 'Unauthorized' });
   }
-  // Try user auth first
-  protectUser(req, res, (userErr) => {
-    if (userErr && !req.user) {
-      // If user auth fails, try admin auth
-      protectAdmin(req, res, (adminErr) => {
-        if (adminErr && !req.admin) {
-          return res.status(401).json({ message: 'Unauthorized' });
-        }
-        next();
-      });
-    } else {
-      next();
-    }
-  });
-}, taskController.downloadTaskFile);
+};
+
+router.get("/file/:fileId/download", authenticateUserOrAdmin, taskController.downloadTaskFile);
 router.delete("/admin/file/:fileId", protectAdmin, checkPermission("task:manage"), taskController.deleteTaskFile);
 
 module.exports = router;

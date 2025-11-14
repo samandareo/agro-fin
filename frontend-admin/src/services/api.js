@@ -184,6 +184,8 @@ export const tasksAPI = {
   downloadFile: (fileId) => api.get(`/tasks/file/${fileId}/download`, { responseType: 'blob' }),
 
   deleteFile: (fileId) => api.delete(`/tasks/admin/file/${fileId}`),
+
+  getMyUploadedFiles: (params) => api.get('/tasks/admin/my-files', { params }),
 };
 
 export default api;

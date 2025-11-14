@@ -178,7 +178,10 @@
         "pending": "Kutilmoqda",
         "open": "Ochiq",
         "closed": "Yopiq"
-      }
+      },
+      "yourFiles": "Siz yuklagan fayllar",
+      "adminFiles": "Admin yuklagan fayllar",
+      "uploadedBy": "Yuklagan foydalanuvchi"
     },
     "common": {
       "loading": "Yuklanmoqda...",

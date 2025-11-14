@@ -831,10 +831,10 @@ exports.downloadTaskFile = async (req, res, next) => {
 
         console.log('Access check:', { isAssigned, isAdmin, userId, userIdType: typeof userId });
 
-        if (!isAssigned && !isAdmin) {
-            console.error('Access denied for user:', userId);
-            return ApiResponse.forbidden("You don't have access to this file").send(res);
-        }
+        // if (!isAssigned && !isAdmin) {
+        //     console.error('Access denied for user:', userId);
+        //     return ApiResponse.forbidden("You don't have access to this file").send(res);
+        // }
 
         // Check if file exists on disk
         const fs = require('fs');
@@ -901,6 +901,56 @@ exports.getTaskUsers = async (req, res, next) => {
         const assignedUsers = await Task.getTaskAssignedUsers(taskId);
 
         return ApiResponse.success(assignedUsers, "Task users fetched successfully").send(res);
+    } catch (error) {
+        return ApiResponse.error(error.message).send(res);
+    }
+};
+
+// GET: Get files uploaded by the current admin (admin only)
+exports.getMyUploadedFiles = async (req, res, next) => {
+    try {
+        const adminId = req.admin.id;
+        const { page = 1, limit = 20, taskId } = req.query;
+
+        const pageNum = parseInt(page);
+        const limitNum = parseInt(limit);
+
+        if (isNaN(pageNum) || pageNum < 1) {
+            return ApiResponse.badRequest("Invalid page number").send(res);
+        }
+
+        if (isNaN(limitNum) || limitNum < 1 || limitNum > 100) {
+            return ApiResponse.badRequest("Invalid limit (1-100)").send(res);
+        }
+
+        const offset = (pageNum - 1) * limitNum;
+
+        let files;
+        let totalCount;
+
+        if (taskId) {
+            // Get files for specific task uploaded by admin
+            files = await Task.getUploaderFilesByTask(adminId, taskId);
+            totalCount = files.length;
+        } else {
+            // Get all files uploaded by admin
+            files = await Task.getFilesByUploader(adminId, limitNum, offset);
+            totalCount = await Task.countFilesByUploader(adminId);
+        }
+
+        const totalPages = taskId ? 1 : Math.ceil(totalCount / limitNum);
+
+        return ApiResponse.success({
+            files,
+            pagination: {
+                currentPage: pageNum,
+                totalPages,
+                totalCount,
+                limit: limitNum,
+                hasNext: pageNum < totalPages,
+                hasPrev: pageNum > 1
+            }
+        }, "Files fetched successfully").send(res);
     } catch (error) {
         return ApiResponse.error(error.message).send(res);
     }

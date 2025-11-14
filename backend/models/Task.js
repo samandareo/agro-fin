@@ -121,7 +121,8 @@ exports.getTaskFiles = async (taskId) => {
             tf.uploaded_by,
             tf.uploaded_at,
             u.name as uploader_name,
-            u.telegram_id as uploader_telegram_id
+            u.telegram_id as uploader_telegram_id,
+            u.role as uploader_role
         FROM tasks_files tf
         LEFT JOIN users u ON tf.uploaded_by = u.id
         WHERE tf.task_id = $1
@@ -295,6 +296,61 @@ exports.deleteTaskFile = async (fileId) => {
         RETURNING *
     `, [fileId]);
     return rows[0] || null;
+};
+
+// Get files uploaded by a specific admin
+exports.getFilesByUploader = async (uploaderId, limit = 20, offset = 0) => {
+    const { rows } = await pool.query(`
+        SELECT
+            tf.id,
+            tf.task_id,
+            tf.file_name,
+            tf.file_path,
+            tf.file_type,
+            tf.uploaded_by,
+            tf.uploaded_at,
+            t.title as task_title,
+            t.status as task_status,
+            u.name as uploader_name
+        FROM tasks_files tf
+        JOIN tasks t ON tf.task_id = t.id
+        LEFT JOIN users u ON tf.uploaded_by = u.id
+        WHERE tf.uploaded_by = $1
+        ORDER BY tf.uploaded_at DESC
+        LIMIT $2 OFFSET $3
+    `, [uploaderId, limit, offset]);
+    return rows || [];
+};
+
+// Count files uploaded by a specific admin
+exports.countFilesByUploader = async (uploaderId) => {
+    const { rows } = await pool.query(`
+        SELECT COUNT(*) as total FROM tasks_files
+        WHERE uploaded_by = $1
+    `, [uploaderId]);
+    return parseInt(rows[0]?.total) || 0;
+};
+
+// Get files uploaded by admin for a specific task
+exports.getUploaderFilesByTask = async (uploaderId, taskId) => {
+    const { rows } = await pool.query(`
+        SELECT
+            tf.id,
+            tf.task_id,
+            tf.file_name,
+            tf.file_path,
+            tf.file_type,
+            tf.uploaded_by,
+            tf.uploaded_at,
+            t.title as task_title,
+            u.name as uploader_name
+        FROM tasks_files tf
+        JOIN tasks t ON tf.task_id = t.id
+        LEFT JOIN users u ON tf.uploaded_by = u.id
+        WHERE tf.uploaded_by = $1 AND tf.task_id = $2
+        ORDER BY tf.uploaded_at DESC
+    `, [uploaderId, taskId]);
+    return rows || [];
 };
 
 // Get all tasks (for admin)

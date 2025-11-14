@@ -349,15 +349,15 @@ const TaskDetailModal = ({ task, onClose, onTaskUpdated, isCompact = false }) =>
           ) : (
             <div className="space-y-4">
               {assignedUsers.map(userAssignment => {
-                // Filter files uploaded by this user
-                const userFiles = files.filter(file => 
+                // Filter files uploaded by this user only
+                const userFiles = files.filter(file =>
                   file.uploaded_by === userAssignment.user_id
                 );
-                
-                // Also include files with no uploader (legacy or admin files) for the first user only
-                const adminFiles = assignedUsers[0]?.user_id === userAssignment.user_id 
-                  ? files.filter(file => !file.uploaded_by || file.uploader_name === null)
-                  : [];
+
+                // Admin files: uploaded by someone with admin or director role (shown for all users)
+                const adminFiles = files.filter(file =>
+                  file.uploader_role === 'admin' || file.uploader_role === 'director'
+                );
 
                 return (
                   <div key={userAssignment.user_id} className="border border-gray-200 rounded-lg overflow-hidden">
@@ -462,17 +462,17 @@ const TaskDetailModal = ({ task, onClose, onTaskUpdated, isCompact = false }) =>
                               </div>
                             ))}
                             
-                            {/* Admin files (shown only for first user) */}
+                            {/* Admin files (shown for all users) */}
                             {adminFiles.map(file => (
-                              <div key={file.id} className="flex items-center justify-between bg-gray-50 border border-gray-200 p-3 rounded-lg">
+                              <div key={file.id} className="flex items-center justify-between bg-purple-50 border border-purple-200 p-3 rounded-lg">
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2">
-                                    <FileText className="h-4 w-4 text-gray-600 flex-shrink-0" />
+                                    <FileText className="h-4 w-4 text-purple-600 flex-shrink-0" />
                                     <div className="min-w-0 flex-1">
-                                      <p className="font-medium text-gray-900 truncate">{file.file_name}</p>
-                                      <div className="flex items-center gap-3 text-xs text-gray-600 mt-1">
-                                        <span className="bg-gray-200 px-2 py-1 rounded text-xs font-medium">
-                                          {t('tasks.adminFile')}
+                                      <p className="font-medium text-purple-900 truncate">{file.file_name}</p>
+                                      <div className="flex items-center gap-3 text-xs text-purple-700 mt-1">
+                                        <span className="bg-purple-200 px-2 py-1 rounded text-xs font-medium">
+                                          {t('tasks.adminFile')} - {file.uploader_name || t('tasks.unknown')}
                                         </span>
                                         <span>{new Date(file.uploaded_at).toLocaleString()}</span>
                                       </div>
@@ -483,7 +483,7 @@ const TaskDetailModal = ({ task, onClose, onTaskUpdated, isCompact = false }) =>
                                   <button
                                     type="button"
                                     onClick={() => handleDownloadFile(file.id, file.file_name)}
-                                    className="p-2 text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                                    className="p-2 text-purple-600 hover:bg-purple-100 rounded transition-colors"
                                     title={t('tasks.download')}
                                   >
                                     <Download className="h-4 w-4" />

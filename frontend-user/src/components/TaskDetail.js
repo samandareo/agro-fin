@@ -308,36 +308,76 @@ const TaskDetail = ({ task, onClose }) => {
 
           {/* Files Section */}
           {displayData.files && displayData.files.length > 0 && (
-            <div className="px-6 py-4">
-              <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                {t('tasks.attachedFiles')} ({displayData.files.length})
-              </h3>
-              <div className="space-y-2">
-                {displayData.files.map((file) => (
-                  <div
-                    key={file.id}
-                    className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
-                  >
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <FileText className="h-5 w-5 text-brand-600 flex-shrink-0" />
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-gray-900 truncate">{file.file_name}</p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {t('tasks.uploadedAt')}: {new Date(file.uploaded_at).toLocaleString()}
-                        </p>
+            <div className="px-6 py-4 space-y-4">
+              {/* User's own uploaded files */}
+              {displayData.files.some(f => f.uploader_role === 'user') && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    {t('tasks.yourFiles')} ({displayData.files.filter(f => f.uploader_role === 'user').length})
+                  </h3>
+                  <div className="space-y-2">
+                    {displayData.files.filter(f => f.uploader_role === 'user').map((file) => (
+                      <div
+                        key={file.id}
+                        className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+                      >
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <FileText className="h-5 w-5 text-blue-600 flex-shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-blue-900 truncate">{file.file_name}</p>
+                            <p className="text-xs text-blue-700 mt-1">
+                              {t('tasks.uploadedAt')}: {new Date(file.uploaded_at).toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleDownloadFile(file)}
+                          className="ml-2 p-2 text-blue-600 hover:bg-blue-200 rounded-lg transition-colors flex-shrink-0"
+                          title={t('tasks.download')}
+                        >
+                          <Download className="h-5 w-5" />
+                        </button>
                       </div>
-                    </div>
-                    <button
-                      onClick={() => handleDownloadFile(file)}
-                      className="ml-2 p-2 text-brand-600 hover:bg-brand-50 rounded-lg transition-colors flex-shrink-0"
-                      title={t('tasks.download')}
-                    >
-                      <Download className="h-5 w-5" />
-                    </button>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
+
+              {/* Admin uploaded files */}
+              {displayData.files.some(f => f.uploader_role === 'admin' || f.uploader_role === 'director') && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    {t('tasks.adminFiles')} ({displayData.files.filter(f => f.uploader_role === 'admin' || f.uploader_role === 'director').length})
+                  </h3>
+                  <div className="space-y-2">
+                    {displayData.files.filter(f => f.uploader_role === 'admin' || f.uploader_role === 'director').map((file) => (
+                      <div
+                        key={file.id}
+                        className="flex items-center justify-between p-3 bg-purple-50 border border-purple-200 rounded-lg hover:bg-purple-100 transition-colors"
+                      >
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <FileText className="h-5 w-5 text-purple-600 flex-shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-purple-900 truncate">{file.file_name}</p>
+                            <p className="text-xs text-purple-700 mt-1">
+                              {t('tasks.uploadedBy')}: {file.uploader_name || t('tasks.unknown')} • {new Date(file.uploaded_at).toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleDownloadFile(file)}
+                          className="ml-2 p-2 text-purple-600 hover:bg-purple-200 rounded-lg transition-colors flex-shrink-0"
+                          title={t('tasks.download')}
+                        >
+                          <Download className="h-5 w-5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

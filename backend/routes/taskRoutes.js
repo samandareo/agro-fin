@@ -11,6 +11,7 @@ router.get("/user/archived-tasks", protectUser, checkPermission("task:read"), ta
 router.get("/user/:taskId", protectUser, checkPermission("task:read"), taskController.getTaskDetail);
 router.put("/user/:taskId/status", protectUser, checkPermission("task:update"), taskController.updateTaskStatus);
 router.post("/user/:taskId/upload-file", protectUser, checkPermission("task:update"), upload.single("file"), taskController.uploadTaskFileUser);
+router.delete("/user/file/:fileId", protectUser, checkPermission("task:update"), taskController.deleteTaskFileUser);
 
 // Admin routes
 router.get("/admin/all", protectAdmin, checkPermission("task:read"), taskController.getAllTasks);

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import toast from 'react-hot-toast';
-import api from '../services/api';
+import api, { tasksAPI } from '../services/api';
 
 const TasksContext = createContext();
 
@@ -183,6 +183,26 @@ export const TasksProvider = ({ children }) => {
     }
   };
 
+  const deleteFile = async (fileId) => {
+    try {
+      const response = await tasksAPI.deleteFile(fileId);
+      
+      // Update task details by removing the deleted file
+      if (taskDetails && response.data.data) {
+        setTaskDetails(response.data.data);
+      }
+      
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error('Delete file error:', error);
+      const errorMessage = error.response?.data?.message || 'Не удалось удалить файл';
+      return { 
+        success: false, 
+        message: errorMessage 
+      };
+    }
+  };
+
   useEffect(() => {
     if (isAuthenticated) {
       loadTasks();
@@ -204,6 +224,7 @@ export const TasksProvider = ({ children }) => {
     updateTaskStatus,
     downloadFile,
     uploadFile,
+    deleteFile,
     pagination,
     activeTasksCount
   };

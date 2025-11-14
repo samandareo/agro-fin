@@ -6,13 +6,14 @@ import { formatDateToDDMMYYYY, formatDateTimeTo24Hour } from '../utils/fileUtils
 import toast from 'react-hot-toast';
 
 const TaskDetail = ({ task, onClose }) => {
-  const { taskDetails, updateTaskStatus, downloadFile, uploadFile, getTaskDetail, loading: contextLoading } = useTasks();
+  const { taskDetails, updateTaskStatus, downloadFile, uploadFile, deleteFile, getTaskDetail, loading: contextLoading } = useTasks();
   const { t } = useTranslation();
   const [selectedStatus, setSelectedStatus] = useState(task.user_status);
   const [updating, setUpdating] = useState(false);
   const [details, setDetails] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [deletingFileId, setDeletingFileId] = useState(null);
 
   useEffect(() => {
     if (taskDetails) {
@@ -78,6 +79,28 @@ const TaskDetail = ({ task, onClose }) => {
     setSelectedFile(null);
     const fileInput = document.getElementById('file-upload-input');
     if (fileInput) fileInput.value = '';
+  };
+
+  const handleDeleteFile = async (fileId, fileName) => {
+    if (!window.confirm(`Вы уверены, что хотите удалить файл "${fileName}"?`)) {
+      return;
+    }
+
+    setDeletingFileId(fileId);
+    try {
+      const result = await deleteFile(fileId);
+      if (result.success) {
+        toast.success('Файл успешно удален');
+        // Refresh task details will be handled by the context
+      } else {
+        toast.error(result.message || 'Не удалось удалить файл');
+      }
+    } catch (error) {
+      console.error('Delete file error:', error);
+      toast.error('Не удалось удалить файл');
+    } finally {
+      setDeletingFileId(null);
+    }
   };
 
   const getStatusColor = (status) => {
@@ -331,13 +354,27 @@ const TaskDetail = ({ task, onClose }) => {
                             </p>
                           </div>
                         </div>
-                        <button
-                          onClick={() => handleDownloadFile(file)}
-                          className="ml-2 p-2 text-blue-600 hover:bg-blue-200 rounded-lg transition-colors flex-shrink-0"
-                          title={t('tasks.download')}
-                        >
-                          <Download className="h-5 w-5" />
-                        </button>
+                        <div className="flex items-center gap-2 ml-2 flex-shrink-0">
+                          <button
+                            onClick={() => handleDownloadFile(file)}
+                            className="p-2 text-blue-600 hover:bg-blue-200 rounded-lg transition-colors"
+                            title={t('tasks.download')}
+                          >
+                            <Download className="h-5 w-5" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteFile(file.id, file.file_name)}
+                            disabled={deletingFileId === file.id}
+                            className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            title={t('common.delete')}
+                          >
+                            {deletingFileId === file.id ? (
+                              <div className="h-5 w-5 rounded-full border-2 border-red-300 border-t-red-600 animate-spin"></div>
+                            ) : (
+                              <Trash2 className="h-5 w-5" />
+                            )}
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>

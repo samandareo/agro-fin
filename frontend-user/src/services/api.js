@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { getErrorMessage, logErrorForDebug, isSilentError } from '../utils/errorHandler';
 
-const API_BASE_URL = 'https://agro-fin.onrender.com/api/v1';
+// const API_BASE_URL = 'https://agro-fin.onrender.com/api/v1';
 // const API_BASE_URL = 'http://localhost:5000/api/v1';
-// const API_BASE_URL = 'http://fin.agrobank.uz/api/v1';
+const API_BASE_URL = 'http://fin.agrobank.uz/api/v1';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -142,6 +142,8 @@ export const tasksAPI = {
   downloadFile: (fileId) => api.get(`/tasks/file/${fileId}/download`, {
     responseType: 'blob'
   }),
+  
+  deleteFile: (fileId) => api.delete(`/tasks/user/file/${fileId}`),
 };
 
 export default api;

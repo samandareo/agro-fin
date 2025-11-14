@@ -458,7 +458,7 @@ const TaskDetailModal = ({ task, onClose, onTaskUpdated, isCompact = false }) =>
           <div className="border-t pt-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2 px-6">
               <FileText className="h-5 w-5" />
-              Admin Uploaded Documents
+              {t('tasks.adminFiles')}
             </h3>
             <div className="px-6 space-y-2 pb-6">
               {files.filter(f => f.uploader_role === 'admin' || f.uploader_role === 'director').map(file => (

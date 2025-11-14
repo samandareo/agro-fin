@@ -1,5 +1,47 @@
 import { isSilentError } from './errorHandler';
 import toast from 'react-hot-toast';
+import i18n from '../i18n';
+
+/**
+ * Translate error code to user-friendly message
+ * @param {String} errorCode - Error code from backend
+ * @returns {String} Translated error message
+ */
+const translateErrorCode = (errorCode) => {
+  const errorKeyMap = {
+    'USERNAME_ALREADY_EXISTS': 'errors.usernameAlreadyExists',
+    'USER_NAME_ALREADY_EXISTS': 'errors.userNameAlreadyExists',
+    'GROUP_NAME_ALREADY_EXISTS': 'errors.groupNameAlreadyExists',
+    'DUPLICATE_ENTRY': 'errors.duplicateEntry',
+    'RELATED_RECORD_NOT_FOUND': 'errors.relatedRecordNotFound',
+    'REQUIRED_FIELD_MISSING': 'errors.requiredFieldMissing',
+    'DATA_VALIDATION_FAILED': 'errors.dataValidationFailed',
+    'REQUIRED_FIELDS_MISSING': 'errors.requiredFieldsMissing',
+    'ROLE_REQUIRED': 'errors.roleRequired',
+    'USER_CREATION_FAILED': 'errors.userCreationFailed',
+    'FILE_ID_REQUIRED': 'errors.fileIdRequired',
+    'FILE_NOT_FOUND': 'errors.fileNotFound',
+    'FILE_ACCESS_DENIED': 'errors.fileAccessDenied',
+    'TASK_ACCESS_DENIED': 'errors.taskAccessDenied',
+    'FILE_DELETION_FAILED': 'errors.fileDeletionFailed',
+    'UNAUTHORIZED': 'errors.unauthorized',
+    'NOT_FOUND': 'errors.notFound',
+    'CONFLICT': 'errors.conflict',
+    'SERVER_ERROR': 'errors.serverError',
+    'NETWORK_ERROR': 'errors.networkError',
+    'TIMEOUT': 'errors.timeout',
+    'GENERAL_ERROR': 'errors.general'
+  };
+  
+  const translationKey = errorKeyMap[errorCode] || 'errors.general';
+  
+  try {
+    return i18n.t(translationKey);
+  } catch (e) {
+    console.warn('Translation failed for error code:', errorCode, e);
+    return errorCode.replace(/_/g, ' ').toLowerCase();
+  }
+};
 
 /**
  * Safely handle API errors in contexts
@@ -16,8 +58,22 @@ export const handleContextError = (error, defaultMessage = 'An error occurred', 
     return;
   }
 
-  // Get error message
-  const errorMessage = error?.message || error?.response?.data?.message || defaultMessage;
+  // Get error message - translate if it's an error code
+  let errorMessage = defaultMessage;
+  
+  if (error?.errorCode) {
+    // This is an error code from our API interceptor - translate it
+    errorMessage = translateErrorCode(error.errorCode);
+  } else if (error?.message) {
+    // Check if the message is an error code
+    if (error.message.includes('_') && error.message === error.message.toUpperCase()) {
+      errorMessage = translateErrorCode(error.message);
+    } else {
+      errorMessage = error.message;
+    }
+  } else if (error?.response?.data?.message) {
+    errorMessage = error.response.data.message;
+  }
 
   // Show toast if requested
   if (showToast) {

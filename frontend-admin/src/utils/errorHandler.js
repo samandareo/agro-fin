@@ -1,3 +1,5 @@
+import i18n from '../i18n';
+
 /**
  * Error Handler Utility
  * Converts API errors into user-friendly messages
@@ -17,19 +19,21 @@ export class SilentError extends Error {
 /**
  * Get user-friendly error message based on error code and status
  * @param {Object} error - Axios error object
+ * @param {Function} t - Translation function from i18next (optional)
  * @param {String} defaultMessage - Fallback message if no match found
  * @returns {String|SilentError} User-friendly error message or SilentError for 403
  */
-export const getErrorMessage = (error, defaultMessage = 'errors.general') => {
-  // Import i18n for translation - done dynamically to avoid circular imports
-  let t = (key) => key; // fallback function
-  try {
-    const i18n = require('i18next').default;
-    if (i18n && i18n.t) {
-      t = i18n.t;
-    }
-  } catch (e) {
-    console.warn('i18n not available for error translation');
+export const getErrorMessage = (error, t = null, defaultMessage = 'errors.general') => {
+  // If no translation function provided, use the imported i18n instance
+  if (!t) {
+    t = (key, fallback = key) => {
+      try {
+        return i18n.t(key, { defaultValue: fallback });
+      } catch (e) {
+        console.warn('Translation failed for key:', key, e);
+        return fallback;
+      }
+    };
   }
 
   // If error has response from server

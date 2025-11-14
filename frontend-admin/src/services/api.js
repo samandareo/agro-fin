@@ -64,21 +64,46 @@ api.interceptors.response.use(
     // Log error for debugging in development
     logErrorForDebug(error, 'API Request');
     
-    // Convert error to user-friendly message (or SilentError for 403)
-    const userMessage = getErrorMessage(error);
-    
-    // Check if this is a silent error (403 Forbidden) - don't show to user
-    if (isSilentError(userMessage)) {
-      logErrorForDebug(error, 'SILENT_ERROR_403');
-      // Return a silent error that won't trigger error toasts
-      return Promise.reject(userMessage);
+    // For 403 errors, just return silent error
+    if (error.response?.status === 403) {
+      const silentError = new Error('FORBIDDEN');
+      silentError.isSilent = true;
+      silentError.response = error.response;
+      return Promise.reject(silentError);
     }
     
-    // Create a new error object with user-friendly message
-    const customError = new Error(userMessage);
+    // Extract error code from backend for translation at component level
+    let errorCode = 'GENERAL_ERROR';
+    
+    if (error.response) {
+      const status = error.response.status;
+      const data = error.response.data;
+      
+      if (status === 401) {
+        errorCode = 'UNAUTHORIZED';
+      } else if (status === 404) {
+        errorCode = 'NOT_FOUND';
+      } else if (status === 409) {
+        errorCode = 'CONFLICT';
+      } else if (status === 400 && data?.message) {
+        errorCode = data.message; // Backend error codes like USERNAME_ALREADY_EXISTS
+      } else if (status === 422 && data?.message) {
+        errorCode = data.message;
+      } else if (status >= 500) {
+        errorCode = 'SERVER_ERROR';
+      }
+    } else if (error.request) {
+      errorCode = 'NETWORK_ERROR';
+    } else if (error.message?.includes('timeout')) {
+      errorCode = 'TIMEOUT';
+    }
+    
+    // Create a new error object with error code for translation
+    const customError = new Error(errorCode);
     customError.response = error.response;
     customError.request = error.request;
     customError.originalError = error;
+    customError.errorCode = errorCode; // Add errorCode property
     
     return Promise.reject(customError);
   }

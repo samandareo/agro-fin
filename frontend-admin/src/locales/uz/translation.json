@@ -388,7 +388,10 @@
             "closed": "Yopiq",
             "assigned": "Tayinlangan",
             "pending": "Kutilmoqda"
-        }
+        },
+        "yourFiles": "Siz yuklagan fayllar",
+        "adminFiles": "Admin yuklagan fayllar",
+        "uploadedBy": "Yuklagan foydalanuvchi"
     },
         "months" : {
         "January": "Yanvar",

@@ -264,7 +264,9 @@
         "forbidden": "Запрещено",
         "notFound": "Не найдено",
         "serverError": "Ошибка сервера",
-        "actions": "Действия"
+        "actions": "Действия",
+        "creating": "Создание...",
+        "updating": "Обновление..."
     },
     "language": {
         "uzbek": "Узбекский",

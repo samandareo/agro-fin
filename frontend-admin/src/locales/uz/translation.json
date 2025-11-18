@@ -264,7 +264,9 @@
         "forbidden": "Taqiqlangan",
         "notFound": "Topilmadi",
         "serverError": "Server xatoligi",
-        "actions": "Harakatlar"
+        "actions": "Harakatlar",
+        "creating": "Yaratilmoqda...",
+        "updating": "Yangilanmoqda..."
     },
     "language": {
         "uzbek": "O'zbek",
